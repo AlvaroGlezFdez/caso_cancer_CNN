@@ -220,3 +220,20 @@ __marimo__/
 
 # Datos locales
 breastdcedl/
+
+# Entorno virtual
+.venv/
+
+# Dataset y metadatos: contienen etiquetas que no se pueden publicar
+breastdcedl/
+
+# Resultados de experimentos y pesos de modelos
+outputs/
+*.pt
+*.pth
+
+# Archivos temporales de Python
+__pycache__/
+
+# Claude.md
+claude.md
