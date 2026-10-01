@@ -234,6 +234,3 @@ outputs/
 
 # Archivos temporales de Python
 __pycache__/
-
-# Claude.md
-claude.md
