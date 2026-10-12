@@ -1,0 +1,86 @@
+{
+  "ejecucion": "20261012_134406_baseline_3ep_cpu",
+  "fecha_hora": "2026-10-12T13:44:06",
+  "modo": "experimento",
+  "comando": "python train.py --nombre baseline_3ep_cpu --epocas 3",
+  "semilla": 42,
+  "fold_val": 0,
+  "pos_weight": null,
+  "n_parametros": 98049,
+  "hiperparametros": {
+    "modelo": "CNNBase",
+    "filtros": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "dropout": 0.3,
+    "inicializacion": "por defecto de PyTorch",
+    "optimizador": "Adam",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0,
+    "batch_size": 32,
+    "epocas_max": 3,
+    "paciencia": 7,
+    "criterio_parada": "AUC de validación por paciente (agregación mean)",
+    "perdida": "BCEWithLogitsLoss",
+    "usar_pos_weight": false,
+    "perdida_validacion": "el mismo criterio que en entrenamiento",
+    "aumento_datos": null,
+    "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+    "agregacion_paciente": "mean",
+    "umbral": 0.5,
+    "max_batches": null,
+    "overfit_batches": null
+  },
+  "datos": {
+    "pacientes_entrenamiento": 878,
+    "cortes_entrenamiento": 8759,
+    "pacientes_validacion": 219,
+    "cortes_validacion": 2186,
+    "validacion_recortada": false,
+    "tasa_pCR_entrenamiento_por_cohorte": {
+      "Duke": 0.1976,
+      "I-SPY1": 0.2651,
+      "I-SPY2": 0.3232
+    }
+  },
+  "entorno": {
+    "git_commit": "d6f72863aff29e86a1c9a5e2022fb76e78b6ccfe",
+    "git_codigo_sin_commit": true,
+    "python": "3.11.0",
+    "pytorch": "2.14.1+cpu",
+    "cuda": null,
+    "dispositivo": "cpu",
+    "gpu": null,
+    "cpu": "AMD Ryzen 5 3500U with Radeon Vega Mobile Gfx",
+    "nucleos_logicos": 8,
+    "hilos_torch": 4,
+    "num_workers": 2,
+    "so": "Windows-10-10.0.26200-SP0",
+    "utils_caso_sha256": "1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377"
+  },
+  "rutas": {
+    "experimento": "experimentos/20261012_134406_baseline_3ep_cpu",
+    "salidas": "outputs/runs/20261012_134406_baseline_3ep_cpu"
+  },
+  "resultado": {
+    "perdida_primer_lote": 0.6234292984008789,
+    "epocas_ejecutadas": 3,
+    "mejor_epoca": 2,
+    "parada_temprana": false,
+    "tiempo_total_s": 1601.8522862999234,
+    "tiempo_medio_epoca_s": 533.8765691999579,
+    "auc_val": 0.5625,
+    "auc_solo_cohorte": 0.534475806451613
+  },
+  "sha256": {
+    "best.pt": "2bdd9a516beafa6659a4ab192257c4561ae7f2c1a0e871e42bf65c1e8423d768",
+    "last.pt": "98195b10a12aa096b02287b9e0d87754225ca2634fbd7bfd02f81909a2612ab0"
+  }
+}

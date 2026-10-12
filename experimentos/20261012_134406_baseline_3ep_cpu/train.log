@@ -1,0 +1,44 @@
+2026-10-12 13:44:06 INFO Ejecución 20261012_134406_baseline_3ep_cpu (experimento)
+2026-10-12 13:44:06 INFO Comando: python train.py --nombre baseline_3ep_cpu --epocas 3
+2026-10-12 13:44:06 INFO Fold de validación 0: entrenamiento 878 pacientes / 8759 cortes; validación 219 pacientes / 2186 cortes
+2026-10-12 13:44:06 INFO Preprocesado: preprocesado.preprocesar, idéntico a utils_caso.cargar_imagen (comprobado)
+2026-10-12 13:44:10 INFO Modelo CNNBase: 98049 parámetros entrenables; dispositivo cpu; pos_weight no; 274 lotes de 32 por época
+2026-10-12 13:44:10 INFO Entorno: {'git_commit': 'd6f72863aff29e86a1c9a5e2022fb76e78b6ccfe', 'git_codigo_sin_commit': True, 'python': '3.11.0', 'pytorch': '2.14.1+cpu', 'cuda': None, 'dispositivo': 'cpu', 'gpu': None, 'cpu': 'AMD Ryzen 5 3500U with Radeon Vega Mobile Gfx', 'nucleos_logicos': 8, 'hilos_torch': 4, 'num_workers': 2, 'so': 'Windows-10-10.0.26200-SP0', 'utils_caso_sha256': '1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377'}
+2026-10-12 13:45:06 INFO   lote 27/274  pérdida media 0.6231  datos 15 s  cálculo 40 s
+2026-10-12 13:45:49 INFO   lote 54/274  pérdida media 0.6234  datos 16 s  cálculo 83 s
+2026-10-12 13:46:36 INFO   lote 81/274  pérdida media 0.6244  datos 16 s  cálculo 130 s
+2026-10-12 13:47:22 INFO   lote 108/274  pérdida media 0.6201  datos 16 s  cálculo 176 s
+2026-10-12 13:48:08 INFO   lote 135/274  pérdida media 0.6148  datos 16 s  cálculo 222 s
+2026-10-12 13:48:55 INFO   lote 162/274  pérdida media 0.6146  datos 17 s  cálculo 269 s
+2026-10-12 13:49:43 INFO   lote 189/274  pérdida media 0.6129  datos 17 s  cálculo 316 s
+2026-10-12 13:50:29 INFO   lote 216/274  pérdida media 0.6097  datos 17 s  cálculo 361 s
+2026-10-12 13:51:14 INFO   lote 243/274  pérdida media 0.6095  datos 17 s  cálculo 406 s
+2026-10-12 13:52:00 INFO   lote 270/274  pérdida media 0.6079  datos 18 s  cálculo 452 s
+2026-10-12 13:52:06 INFO Pérdida del primer lote: 0.6234 (referencia ln 2 = 0.6931)
+2026-10-12 13:53:16 INFO Época 1/3 | pérdida entr 0.6074 val 0.6220 | AUC val 0.5218 sens 0.000 esp 1.000 | 545 s (datos 18, cálculo 458, val 70) | 18.4 img/s | CPU 50 % | RAM 825 MB | mejor
+2026-10-12 13:54:03 INFO   lote 27/274  pérdida media 0.6335  datos 1 s  cálculo 47 s
+2026-10-12 13:54:48 INFO   lote 54/274  pérdida media 0.6207  datos 1 s  cálculo 92 s
+2026-10-12 13:55:35 INFO   lote 81/274  pérdida media 0.6172  datos 1 s  cálculo 138 s
+2026-10-12 13:56:21 INFO   lote 108/274  pérdida media 0.6142  datos 1 s  cálculo 184 s
+2026-10-12 13:57:07 INFO   lote 135/274  pérdida media 0.6090  datos 1 s  cálculo 230 s
+2026-10-12 13:57:54 INFO   lote 162/274  pérdida media 0.6074  datos 2 s  cálculo 276 s
+2026-10-12 13:58:42 INFO   lote 189/274  pérdida media 0.6074  datos 2 s  cálculo 325 s
+2026-10-12 13:59:34 INFO   lote 216/274  pérdida media 0.6078  datos 2 s  cálculo 376 s
+2026-10-12 14:00:17 INFO   lote 243/274  pérdida media 0.6091  datos 2 s  cálculo 419 s
+2026-10-12 14:01:07 INFO   lote 270/274  pérdida media 0.6038  datos 3 s  cálculo 469 s
+2026-10-12 14:02:06 INFO Época 2/3 | pérdida entr 0.6036 val 0.6188 | AUC val 0.5625 sens 0.000 esp 1.000 | 530 s (datos 3, cálculo 477, val 50) | 18.3 img/s | CPU 53 % | RAM 860 MB | mejor
+2026-10-12 14:02:56 INFO   lote 27/274  pérdida media 0.5949  datos 1 s  cálculo 49 s
+2026-10-12 14:03:41 INFO   lote 54/274  pérdida media 0.5966  datos 1 s  cálculo 95 s
+2026-10-12 14:04:31 INFO   lote 81/274  pérdida media 0.5736  datos 1 s  cálculo 144 s
+2026-10-12 14:05:18 INFO   lote 108/274  pérdida media 0.5779  datos 1 s  cálculo 191 s
+2026-10-12 14:06:04 INFO   lote 135/274  pérdida media 0.5858  datos 2 s  cálculo 237 s
+2026-10-12 14:06:51 INFO   lote 162/274  pérdida media 0.5854  datos 2 s  cálculo 283 s
+2026-10-12 14:07:37 INFO   lote 189/274  pérdida media 0.5899  datos 2 s  cálculo 330 s
+2026-10-12 14:08:24 INFO   lote 216/274  pérdida media 0.5914  datos 2 s  cálculo 375 s
+2026-10-12 14:09:10 INFO   lote 243/274  pérdida media 0.5928  datos 3 s  cálculo 421 s
+2026-10-12 14:09:56 INFO   lote 270/274  pérdida media 0.5944  datos 3 s  cálculo 468 s
+2026-10-12 14:10:52 INFO Época 3/3 | pérdida entr 0.5950 val 0.6177 | AUC val 0.5558 sens 0.062 esp 0.948 | 526 s (datos 3, cálculo 474, val 50) | 18.4 img/s | CPU 53 % | RAM 847 MB
+2026-10-12 14:11:40 INFO Mejor época 2; best.pt recargado: diferencia máxima con las predicciones de esa época = 0.00e+00
+2026-10-12 14:11:43 INFO Mejor modelo (validación, por paciente): AUC 0.5625 | sens 0.000 | esp 1.000 | Brier 0.2116 | AUC solo cohorte 0.5345
+2026-10-12 14:11:43 INFO Fila añadida a experimentos/experimentos.csv
+2026-10-12 14:11:43 INFO Hecho en 26.7 min. Resultados en experimentos/20261012_134406_baseline_3ep_cpu y outputs/runs/20261012_134406_baseline_3ep_cpu
