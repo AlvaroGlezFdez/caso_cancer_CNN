@@ -4,6 +4,22 @@ Contexto: lee breastdcedl/GUIA.md y breastdcedl/documentation/caso_breastdcedl.p
 antes de cualquier tarea. Este archivo resume el estado del proyecto y las
 decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 
+## Cómo trabajamos: sesiones sin memoria
+- El proyecto se desarrolla en dos máquinas: un portátil sin GPU (solo CPU) y un
+  ordenador con GPU NVIDIA. El código se sincroniza con git: pull al empezar,
+  commit y push al terminar.
+- Cada sesión de Claude Code empieza sin ningún contexto del proyecto. Este archivo
+  es la única memoria compartida. Al empezar una sesión: lee este archivo entero,
+  revisa los últimos commits (git log) y el estado del repositorio, comprueba en qué
+  máquina estás (torch.cuda.is_available()) y haz un resumen breve al usuario de
+  dónde está el proyecto antes de hacer nada.
+- Las decisiones de diseño se toman fuera de Claude Code, con el usuario. Tu función
+  es leer el contexto, implementar lo que se te pida, ejecutarlo e informar de los
+  resultados. No rediseñes por tu cuenta.
+- Al terminar cada tarea, actualiza "Estado actual" (qué se hizo, en qué máquina y
+  qué queda pendiente) para que la siguiente sesión pueda continuar en cualquiera
+  de las dos máquinas, y recuerda al usuario hacer commit y push.
+
 ## Reglas obligatorias
 - CNN 2D construida desde cero en PyTorch. Prohibido usar modelos preentrenados,
   torchvision.models o transfer learning.
@@ -21,6 +37,19 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 - Reproducibilidad: semilla fija; configuración, métricas y pesos guardados en disco.
 - Nunca modifiques el dataset original. breastdcedl/ no se sube a git: contiene
   etiquetas que no pueden publicarse.
+- Código en archivos .py, no en notebooks.
+
+## Dónde se guardan los resultados
+- experimentos/ (SÍ se sube a git, para compartir resultados entre máquinas):
+  experimentos/experimentos.csv con una fila por ejecución, y una carpeta
+  experimentos/<fecha_hora>_<nombre>/ por ejecución con config.json, train.log,
+  metricas_epoca.csv, metricas por cohorte y todas las gráficas.
+  Aquí solo van resultados agregados: nunca etiquetas ni predicciones por paciente.
+- outputs/ (NO se sube a git): pesos de los modelos (*.pt) y CSV de predicciones
+  por corte o por paciente, porque contienen etiquetas. Misma estructura:
+  outputs/runs/<fecha_hora>_<nombre>/.
+- Si una tarea necesita pesos o predicciones generados en la otra máquina, avisa:
+  no están en el repositorio.
 
 ## Forma de trabajar
 - Las decisiones de diseño (arquitectura, hiperparámetros, umbral) las toma el usuario.
@@ -77,9 +106,29 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
   referencia "solo cohorte".
 
 ## Estado actual
-- Hecho: descarga del dataset, entorno, auditoría completa.
-- Desarrollo hecho en un portátil sin GPU NVIDIA (solo CPU).
-- Siguiente tarea: infraestructura de entrenamiento (models/cnn_base.py, train.py,
-  registro de cada ejecución en outputs/runs/, outputs/experimentos.csv) y
-  ejecuciones de prueba: --max-batches 5, --overfit-batches 2 y una época completa.
-  Todavía no se ha entrenado ningún modelo.
+- Hecho (portátil sin GPU, 2026-10-12):
+  - Descarga del dataset, entorno, auditoría completa.
+  - Infraestructura de entrenamiento: models/cnn_base.py (CNNBase), preprocesado.py
+    (función única de preprocesado, también para la app), train.py e informe.py.
+    psutil instalado en el .venv del portátil.
+  - Circuito validado en CPU: --max-batches 5 sin errores (pérdida del primer lote
+    0,6234 y no 0,69 porque con la inicialización por defecto el logit inicial medio
+    es -0,52; con logit 0 daría 0,6931); --overfit-batches 2 baja la pérdida de 0,61
+    a ~0,05 en 100 iteraciones; una época completa tarda ~9 min (85 % cálculo,
+    10 % validación, carga de datos despreciable salvo ~18 s de arranque de workers).
+  - Línea base de 3 épocas sin pos_weight (experimentos/20261012_134406_baseline_3ep_cpu):
+    AUC de validación por paciente 0,563 (mejor época 2) frente a 0,534 de la
+    referencia "solo cohorte"; sensibilidad 0 con umbral 0,5 (todas las
+    probabilidades entre ~0,12 y 0,40): solo ha aprendido la proporción de clases.
+    Su config.json apunta a d6f7286 con git_codigo_sin_commit=true: el código
+    entrenado es el del commit b402ff4 salvo el control de commit de train.py.
+- Siguiente paso: línea base completa sin pos_weight (máximo 30 épocas, paciencia 7,
+  resto por defecto), hasta ~4,5 h en el portátil. Desde la raíz del repo:
+  `.venv\Scripts\python.exe train.py --nombre baseline_30ep_cpu --epocas 30 --paciencia 7`.
+  Después, la misma con --pos-weight (comparación obligatoria).
+- Notas:
+  - train.py no lanza un experimento (no prueba) si hay archivos .py sin commit;
+    --permitir-sin-commit lo salta y queda registrado en config.json.
+  - Pendiente: no existe requirements.txt (debe incluir psutil). En la máquina con
+    GPU hay que instalar psutil.
+  - Pesos y predicciones solo están en outputs/ del portátil (no van a git).
