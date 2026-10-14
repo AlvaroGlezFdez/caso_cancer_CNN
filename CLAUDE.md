@@ -57,6 +57,9 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 - Pregunta antes de instalar paquetes.
 - Al terminar cada tarea, explica brevemente qué has hecho y por qué, y actualiza
   la sección "Estado actual" de este archivo.
+- Los entrenamientos los lanza el usuario desde la terminal: prepara el código, dale
+  el comando exacto de PowerShell (desde la raíz del repo) y no los ejecutes tú.
+  Pruebas rápidas (--prueba) solo si las pide.
 
 ## Puesta en marcha en un ordenador nuevo
 1. Crear el entorno virtual .venv con Python 3.11.
@@ -106,6 +109,8 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
   referencia "solo cohorte".
 
 ## Estado actual
+- PROYECTO EN PAUSA desde 2026-10-14: el usuario se centra en otro trabajo. Al
+  retomarlo, empezar por "Siguiente paso".
 - Hecho (portátil sin GPU, 2026-10-12):
   - Descarga del dataset, entorno, auditoría completa.
   - Infraestructura de entrenamiento: models/cnn_base.py (CNNBase), preprocesado.py
@@ -114,21 +119,38 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
   - Circuito validado en CPU: --max-batches 5 sin errores (pérdida del primer lote
     0,6234 y no 0,69 porque con la inicialización por defecto el logit inicial medio
     es -0,52; con logit 0 daría 0,6931); --overfit-batches 2 baja la pérdida de 0,61
-    a ~0,05 en 100 iteraciones; una época completa tarda ~9 min (85 % cálculo,
-    10 % validación, carga de datos despreciable salvo ~18 s de arranque de workers).
+    a ~0,05 en 100 iteraciones.
   - Línea base de 3 épocas sin pos_weight (experimentos/20261012_134406_baseline_3ep_cpu):
-    AUC de validación por paciente 0,563 (mejor época 2) frente a 0,534 de la
-    referencia "solo cohorte"; sensibilidad 0 con umbral 0,5 (todas las
-    probabilidades entre ~0,12 y 0,40): solo ha aprendido la proporción de clases.
-    Su config.json apunta a d6f7286 con git_codigo_sin_commit=true: el código
-    entrenado es el del commit b402ff4 salvo el control de commit de train.py.
-- Siguiente paso: línea base completa sin pos_weight (máximo 30 épocas, paciencia 7,
-  resto por defecto), hasta ~4,5 h en el portátil. Desde la raíz del repo:
-  `.venv\Scripts\python.exe train.py --nombre baseline_30ep_cpu --epocas 30 --paciencia 7`.
-  Después, la misma con --pos-weight (comparación obligatoria).
+    AUC val 0,563, sensibilidad 0 con umbral 0,5: solo aprendió la proporción de
+    clases. Su config.json apunta a d6f7286 (código sin commit); el código entrenado
+    es el del commit b402ff4 salvo el control de commit de train.py.
+  - Línea base completa sin pos_weight (experimentos/20261012_142807_baseline_30ep_cpu,
+    commit c7e5967): early stopping en la época 17, mejor época 10; 177,6 min en CPU
+    (~10,4 min/época: ~565 s cálculo, ~60 s validación, ~3 s espera de datos).
+    - AUC de validación por paciente 0,603 (IC95 aprox. 0,52-0,69) frente a 0,534
+      de "solo cohorte". Por cohorte: I-SPY1 0,66 (21 pac.), I-SPY2 0,61 (156),
+      Duke 0,56 (42).
+    - Umbral 0,5: sensibilidad 0,45 (29/64), especificidad 0,70 (108/155).
+    - Sobreajuste: la pérdida de validación es mínima en la época 8 y luego sube.
+      El AUC por época oscila entre 0,52 y 0,60; el 0,603 es un pico aislado y algo
+      optimista (época elegida con la misma validación).
+    - Mal calibrada: probabilidad media 0,44 frente a tasa real 0,29; Brier 0,228
+      (predecir siempre la tasa de pCR da 0,207). Sensibilidad y especificidad con
+      umbral 0,5 cambian mucho de una época a otra.
+- Siguiente paso: la misma línea base con --pos-weight (comparación obligatoria).
+  Desde la raíz del repo (el nombre lo elige el usuario):
+  `.venv\Scripts\python.exe train.py --nombre baseline_pw_30ep_cpu --pos-weight --epocas 30 --paciencia 7`
+  Hasta ~5 h en el portátil; mucho menos en la máquina con GPU.
+  Pendiente de decidir por el usuario, a la vista de estos resultados: qué hacer con
+  el sobreajuste y la calibración, y el umbral y el método de agregación (siempre
+  con la validación interna, nunca con test).
 - Notas:
   - train.py no lanza un experimento (no prueba) si hay archivos .py sin commit;
     --permitir-sin-commit lo salta y queda registrado en config.json.
   - Pendiente: no existe requirements.txt (debe incluir psutil). En la máquina con
     GPU hay que instalar psutil.
-  - Pesos y predicciones solo están en outputs/ del portátil (no van a git).
+  - Pesos y predicciones solo están en outputs/ del portátil (no van a git). Mejor
+    modelo hasta ahora: outputs/runs/20261012_142807_baseline_30ep_cpu/best.pt
+    (sha256 b53dfe83..., en su config.json).
+  - En el portátil las épocas pasaron de ~9,3 a ~10,5 min a partir de la 3
+    (posible bajada de frecuencia por temperatura; sin confirmar).
