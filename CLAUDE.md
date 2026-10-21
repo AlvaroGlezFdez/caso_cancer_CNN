@@ -150,8 +150,8 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
       en pCR (poca separación).
     - Sus 3 primeras épocas son idénticas a las de baseline_3ep_cpu (la semilla es
       reproducible).
-- Hecho (portátil sin GPU, 2026-10-21): preparación de los experimentos contra el
-  sobreajuste.
+- Hecho (portátil sin GPU, 2026-10-21, commit d793f98): preparación de los
+  experimentos contra el sobreajuste.
   - requirements.txt con las versiones exactas del .venv del portátil.
   - aumento.py + train.py --aumento: volteo horizontal p=0,5 y rotación uniforme
     ±10° (bilineal, relleno 0), la misma transformación en las 3 fases (una única
@@ -170,25 +170,63 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
   - Pruebas --prueba --max-batches 2 --epocas 2 con --aumento y con
     --weight-decay 1e-4: sin errores. Con weight decay, la pérdida del primer lote
     es 0,6234292984008789, idéntica a la línea base (misma inicialización y barajado).
-- Siguiente paso (ordenador con GPU, 2026-10-21 por la tarde): tres entrenamientos de
-  30 épocas máx. y paciencia 7, cada uno con UNA diferencia respecto a
-  baseline_30ep_cpu. Desde la raíz del repo:
-  `.venv\Scripts\python.exe train.py --nombre baseline_pw_30ep --pos-weight --epocas 30 --paciencia 7`
-  `.venv\Scripts\python.exe train.py --nombre aumento_30ep --aumento --epocas 30 --paciencia 7`
-  `.venv\Scripts\python.exe train.py --nombre wd_30ep --weight-decay 1e-4 --epocas 30 --paciencia 7`
-  Al terminar: commit y push de experimentos/ desde la GPU (pesos y predicciones se
-  quedan en outputs/ de la GPU).
-  Pendiente de decidir por el usuario:
-  - El dispositivo también cambia (CPU -> GPU): si se repite la línea base en la GPU
-    (baseline_30ep_gpu, sin flags) como referencia de las tres.
-  - Calibración, umbral y método de agregación (siempre con la validación interna,
-    nunca con test).
+- Siguiente paso (ordenador con GPU, a partir del 2026-10-21 por la tarde; el
+  usuario lanza los entrenamientos, Claude no):
+  1. Comprobaciones de puesta en marcha en la GPU (aún no hechas allí):
+     - git pull; el último commit debe ser d793f98 o posterior.
+     - torch.cuda.is_available() True y nombre de la GPU. Si no: PyTorch con CUDA
+       desde pytorch.org (2.14.1 si está disponible), no desde requirements.txt.
+     - Resto de dependencias (incluye psutil) SIN la línea de torch: comando en la
+       cabecera de requirements.txt. Después, comprobar que torch sigue con CUDA.
+     - Dataset: samples.csv 12.703 filas (10.945 train, 1.758 test), patients.csv
+       1.273, 38.109 PNG en breastdcedl/dataset, sha256 de utils_caso.py
+       1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377.
+       Si falta: python descargar_datos.py.
+     - Prueba corta en CUDA (la ruta por GPU nunca se ha ejecutado); en el log debe
+       salir "dispositivo cuda":
+       `.venv\Scripts\python.exe train.py --nombre prueba_gpu --prueba --max-batches 2 --epocas 2 --aumento --weight-decay 1e-4`
+  2. Tres entrenamientos de 30 épocas máx. y paciencia 7, cada uno con UNA
+     diferencia de configuración respecto a baseline_30ep_cpu. Desde la raíz:
+     `.venv\Scripts\python.exe train.py --nombre baseline_pw_30ep --pos-weight --epocas 30 --paciencia 7`
+     `.venv\Scripts\python.exe train.py --nombre aumento_30ep --aumento --epocas 30 --paciencia 7`
+     `.venv\Scripts\python.exe train.py --nombre wd_30ep --weight-decay 1e-4 --epocas 30 --paciencia 7`
+     Si en la primera época domina el tiempo de espera de datos, se puede subir
+     --num-workers (con valores >= 1 no debería cambiar los resultados).
+  3. Al terminar: commit y push de experimentos/ desde la GPU (pesos y predicciones
+     se quedan en outputs/ de la GPU) e informar de los resultados frente a
+     baseline_30ep_cpu: AUC con IC, "solo cohorte", por cohorte, sensibilidad y
+     especificidad, Brier y calibración, y la época de mínima pérdida de validación.
+- Decisiones pendientes (las toma el usuario; no decidir por él):
+  - Línea base en GPU (baseline_30ep_gpu, sin flags): las tres ejecuciones cambian
+    también de dispositivo (CPU -> GPU), y en CUDA el entrenamiento no es
+    determinista del todo. El 2026-10-21 el usuario decidió no lanzarla de momento;
+    replantearlo al ver los resultados.
+  - Tras los resultados: si se usa pos_weight, qué regularización se adopta
+    (aumento, weight decay, ambos o ninguno) y si hacen falta más pruebas (otros
+    valores de weight decay, combinaciones).
+  - Qué hacer con la mala calibración (probabilidad media 0,44 frente a 0,29).
+  - Umbral (ahora 0,5) y método de agregación por paciente (ahora media): con la
+    validación interna, nunca con test.
+  - Cuándo y en qué orden lanzar los experimentos de arquitectura previstos
+    (estrecha 8->64, quinto bloque, realce explícito).
+  - Si el modelo final se valida solo con el fold 0 o con validación cruzada de
+    5 folds.
+  - Qué modelo se cierra como final y cuándo se hace la evaluación única en test.
+  - App web: framework (Streamlit, Gradio...) y dónde desplegarla (debe ser
+    accesible por URL; requisitos en GUIA.md C6).
+  - Detalles del aumento que eligió Claude y el usuario dejó "de momento así"
+    (2026-10-21): interpolación bilineal, relleno 0, ángulo uniforme y semilla del
+    aumento = semilla + 1. Revisables.
+- Entregables aún sin empezar (GUIA.md C7): informe, cinco diapositivas, app
+  desplegada y pesos del modelo final.
 - Notas:
   - train.py no lanza un experimento (no prueba) si hay archivos .py sin commit;
     --permitir-sin-commit lo salta y queda registrado en config.json.
   - En la máquina con GPU hay que instalar psutil (está en requirements.txt).
-  - Pesos y predicciones de las ejecuciones del 2026-10-12 solo están en outputs/ del
-    portátil (no van a git). Mejor modelo hasta ahora:
+  - Pesos y predicciones de las ejecuciones del 2026-10-12, y la figura del aumento
+    (outputs/pruebas/20261021_144701_aumento_fases.png; se regenera con
+    `python aumento.py`), solo están en outputs/ del portátil (no van a git).
+    Mejor modelo hasta ahora:
     outputs/runs/20261012_142807_baseline_30ep_cpu/best.pt (sha256 b53dfe83..., en
     su config.json).
   - El histograma de probabilidades por clase está en el panel derecho de
