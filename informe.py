@@ -277,6 +277,8 @@ def generar_informe(carpeta: Path, epocas: pd.DataFrame, pred: pd.DataFrame, tas
         + f", dispositivo {contexto['dispositivo']}.",
         f"- pos_weight: {contexto['pos_weight'] if contexto['pos_weight'] is not None else 'no'}; "
         f"épocas ejecutadas: {contexto['epocas_ejecutadas']}; mejor época: {contexto['mejor_epoca']}.",
+        f"- Optimizador AdamW, weight decay {contexto.get('weight_decay', 0):g}; "
+        f"aumento de datos: {contexto.get('aumento') or 'no'}.",
         f"- Métricas por paciente: agregación `{metodo}` de las probabilidades de sus cortes, umbral {umbral}.",
         "",
         "## Métricas del mejor modelo\n",

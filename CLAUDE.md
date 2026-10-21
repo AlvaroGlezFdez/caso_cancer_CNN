@@ -63,9 +63,12 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 
 ## Puesta en marcha en un ordenador nuevo
 1. Crear el entorno virtual .venv con Python 3.11.
-2. Si hay GPU NVIDIA (comprobar con nvidia-smi), instalar PyTorch con CUDA desde
-   las instrucciones oficiales de pytorch.org en lugar de la versión +cpu que
-   figura en requirements.txt. El resto de dependencias, desde requirements.txt.
+2. Sin GPU: .venv\Scripts\python.exe -m pip install -r requirements.txt (versiones
+   exactas del .venv del portátil, con torch 2.14.1+cpu).
+   Si hay GPU NVIDIA (comprobar con nvidia-smi): instalar primero PyTorch con CUDA
+   desde las instrucciones oficiales de pytorch.org (2.14.1 si está disponible) y
+   después requirements.txt SIN la línea de torch (el comando está en su cabecera).
+   Instalarlo tal cual sustituiría torch CUDA por la versión +cpu.
 3. Descargar el dataset con: python descargar_datos.py (queda en breastdcedl/).
 4. Comprobar que torch.cuda.is_available() devuelve True si hay GPU NVIDIA.
 
@@ -97,9 +100,15 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 - Línea base (98.049 parámetros entrenables):
   4 bloques Conv2d 3x3 (padding=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2),
   filtros 3->16->32->64->128; AdaptiveAvgPool2d(1) -> Dropout(0.3) -> Linear(128, 1).
-- Entrenamiento por defecto: Adam, lr 1e-3, batch 32, máximo 30 épocas,
-  early stopping con paciencia 7 vigilando el AUC de validación por paciente
-  (agregación media), semilla 42, sin aumento de datos.
+- Entrenamiento por defecto: AdamW con weight decay 0 (equivale a Adam: comprobado
+  bit a bit), lr 1e-3, batch 32, máximo 30 épocas, early stopping con paciencia 7
+  vigilando el AUC de validación por paciente (agregación media), semilla 42, sin
+  aumento de datos.
+- Contra el sobreajuste (decidido el 2026-10-21), cada uno por separado:
+  - Aumento geométrico (--aumento): volteo horizontal p=0,5 y rotación uniforme de
+    hasta ±10°, la misma transformación en las 3 fases, solo en entrenamiento.
+    Nada de brillo ni contraste.
+  - Weight decay 1e-4 (--weight-decay 1e-4) con AdamW.
 - Validación interna: fold 0 fijo para comparar todas las variantes.
 - Normalización: solo dividir entre 255.
 - Experimentos previstos, cambiando una sola cosa cada vez: con y sin pos_weight
@@ -109,8 +118,7 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
   referencia "solo cohorte".
 
 ## Estado actual
-- PROYECTO EN PAUSA desde 2026-10-14: el usuario se centra en otro trabajo. Al
-  retomarlo, empezar por "Siguiente paso".
+- Proyecto retomado el 2026-10-21 (estuvo en pausa desde el 2026-10-14).
 - Hecho (portátil sin GPU, 2026-10-12):
   - Descarga del dataset, entorno, auditoría completa.
   - Infraestructura de entrenamiento: models/cnn_base.py (CNNBase), preprocesado.py
@@ -127,8 +135,9 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
   - Línea base completa sin pos_weight (experimentos/20261012_142807_baseline_30ep_cpu,
     commit c7e5967): early stopping en la época 17, mejor época 10; 177,6 min en CPU
     (~10,4 min/época: ~565 s cálculo, ~60 s validación, ~3 s espera de datos).
-    - AUC de validación por paciente 0,603 (IC95 aprox. 0,52-0,69) frente a 0,534
-      de "solo cohorte". Por cohorte: I-SPY1 0,66 (21 pac.), I-SPY2 0,61 (156),
+    - AUC de validación por paciente 0,603 (IC95 de Hanley-McNeil 0,52-0,69;
+      bootstrap por paciente 0,53-0,68) frente a 0,534 de "solo cohorte", que cae
+      dentro del intervalo. Por cohorte: I-SPY1 0,66 (21 pac.), I-SPY2 0,61 (156),
       Duke 0,56 (42).
     - Umbral 0,5: sensibilidad 0,45 (29/64), especificidad 0,70 (108/155).
     - Sobreajuste: la pérdida de validación es mínima en la época 8 y luego sube.
@@ -137,20 +146,55 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
     - Mal calibrada: probabilidad media 0,44 frente a tasa real 0,29; Brier 0,228
       (predecir siempre la tasa de pCR da 0,207). Sensibilidad y especificidad con
       umbral 0,5 cambian mucho de una época a otra.
-- Siguiente paso: la misma línea base con --pos-weight (comparación obligatoria).
-  Desde la raíz del repo (el nombre lo elige el usuario):
-  `.venv\Scripts\python.exe train.py --nombre baseline_pw_30ep_cpu --pos-weight --epocas 30 --paciencia 7`
-  Hasta ~5 h en el portátil; mucho menos en la máquina con GPU.
-  Pendiente de decidir por el usuario, a la vista de estos resultados: qué hacer con
-  el sobreajuste y la calibración, y el umbral y el método de agregación (siempre
-  con la validación interna, nunca con test).
+    - Probabilidades por paciente entre 0,12 y 0,76; media 0,43 en no pCR y 0,48
+      en pCR (poca separación).
+    - Sus 3 primeras épocas son idénticas a las de baseline_3ep_cpu (la semilla es
+      reproducible).
+- Hecho (portátil sin GPU, 2026-10-21): preparación de los experimentos contra el
+  sobreajuste.
+  - requirements.txt con las versiones exactas del .venv del portátil.
+  - aumento.py + train.py --aumento: volteo horizontal p=0,5 y rotación uniforme
+    ±10° (bilineal, relleno 0), la misma transformación en las 3 fases (una única
+    rejilla de muestreo por corte), aplicada solo a los lotes de entrenamiento ya en
+    el dispositivo. Usa un generador propio (semilla+1): no altera ni el barajado ni
+    el dropout, y no depende de --num-workers. `python aumento.py` comprueba que con
+    las 3 fases iguales salen 3 canales idénticos (diferencia 0) y guarda una figura
+    en outputs/pruebas/ (revisada: fases alineadas, EARLY-PRE nítido).
+  - train.py --weight-decay (por defecto 0) y optimizador AdamW. AdamW con weight
+    decay 0 da pesos idénticos bit a bit a Adam (20 pasos de CNNBase), así que la
+    línea base no cambia. config.json e informe.md registran optimizador, weight
+    decay y aumento; experimentos.csv tiene una columna weight_decay nueva (0 en las
+    dos filas anteriores, que usaron Adam).
+  - anadir_fila relee experimentos.csv con float_precision="round_trip" (antes
+    reescribía el último decimal de algunos valores de filas anteriores).
+  - Pruebas --prueba --max-batches 2 --epocas 2 con --aumento y con
+    --weight-decay 1e-4: sin errores. Con weight decay, la pérdida del primer lote
+    es 0,6234292984008789, idéntica a la línea base (misma inicialización y barajado).
+- Siguiente paso (ordenador con GPU, 2026-10-21 por la tarde): tres entrenamientos de
+  30 épocas máx. y paciencia 7, cada uno con UNA diferencia respecto a
+  baseline_30ep_cpu. Desde la raíz del repo:
+  `.venv\Scripts\python.exe train.py --nombre baseline_pw_30ep --pos-weight --epocas 30 --paciencia 7`
+  `.venv\Scripts\python.exe train.py --nombre aumento_30ep --aumento --epocas 30 --paciencia 7`
+  `.venv\Scripts\python.exe train.py --nombre wd_30ep --weight-decay 1e-4 --epocas 30 --paciencia 7`
+  Al terminar: commit y push de experimentos/ desde la GPU (pesos y predicciones se
+  quedan en outputs/ de la GPU).
+  Pendiente de decidir por el usuario:
+  - El dispositivo también cambia (CPU -> GPU): si se repite la línea base en la GPU
+    (baseline_30ep_gpu, sin flags) como referencia de las tres.
+  - Calibración, umbral y método de agregación (siempre con la validación interna,
+    nunca con test).
 - Notas:
   - train.py no lanza un experimento (no prueba) si hay archivos .py sin commit;
     --permitir-sin-commit lo salta y queda registrado en config.json.
-  - Pendiente: no existe requirements.txt (debe incluir psutil). En la máquina con
-    GPU hay que instalar psutil.
-  - Pesos y predicciones solo están en outputs/ del portátil (no van a git). Mejor
-    modelo hasta ahora: outputs/runs/20261012_142807_baseline_30ep_cpu/best.pt
-    (sha256 b53dfe83..., en su config.json).
-  - En el portátil las épocas pasaron de ~9,3 a ~10,5 min a partir de la 3
-    (posible bajada de frecuencia por temperatura; sin confirmar).
+  - En la máquina con GPU hay que instalar psutil (está en requirements.txt).
+  - Pesos y predicciones de las ejecuciones del 2026-10-12 solo están en outputs/ del
+    portátil (no van a git). Mejor modelo hasta ahora:
+    outputs/runs/20261012_142807_baseline_30ep_cpu/best.pt (sha256 b53dfe83..., en
+    su config.json).
+  - El histograma de probabilidades por clase está en el panel derecho de
+    calibracion.png (no hay archivo aparte).
+  - En el portátil las épocas pasaron de ~9,3 a ~10,5 min a partir de la 3 (posible
+    bajada de frecuencia por temperatura; sin confirmar). En baseline_3ep_cpu la
+    época 3 tardó ~526 s, así que no depende del número de época.
+  - En CUDA el backward de AdaptiveAvgPool2d no es determinista: dos ejecuciones
+    iguales en la GPU pueden diferir ligeramente aunque cudnn.deterministic=True.

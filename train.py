@@ -4,14 +4,19 @@ Uso, desde la raíz del repositorio:
 
     python train.py --nombre baseline_3ep_cpu --epocas 3
     python train.py --nombre baseline_pw --pos-weight
+    python train.py --nombre aumento --aumento
+    python train.py --nombre wd --weight-decay 1e-4
     python train.py --nombre prueba_max5 --max-batches 5 --epocas 2      # prueba
     python train.py --nombre prueba_overfit --overfit-batches 2 --epocas 50
     python train.py --nombre prueba_epoca --epocas 1 --prueba
 
-Los valores por defecto son los de "Decisiones tomadas" en CLAUDE.md: Adam,
-lr 1e-3, batch 32, 30 épocas como máximo, early stopping con paciencia 7 sobre
-el AUC de validación por paciente (agregación media), semilla 42, fold 0, sin
-aumento de datos y sin pos_weight.
+Los valores por defecto son los de "Decisiones tomadas" en CLAUDE.md: AdamW con
+weight decay 0 (equivale a Adam), lr 1e-3, batch 32, 30 épocas como máximo,
+early stopping con paciencia 7 sobre el AUC de validación por paciente
+(agregación media), semilla 42, fold 0, sin aumento de datos y sin pos_weight.
+
+--aumento aplica aumento.aumentar (volteo horizontal y rotación de hasta ±10°,
+la misma transformación en las tres fases) solo a los lotes de entrenamiento.
 
 Una ejecución normal escribe:
   experimentos/<fecha_hora>_<nombre>/  config.json, train.log, metricas_epoca.csv
@@ -31,6 +36,7 @@ ese control: --permitir-sin-commit (queda registrado en config.json).
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import itertools
 import logging
@@ -60,6 +66,7 @@ RAIZ_DATOS = RAIZ_REPO / "breastdcedl"
 sys.path.insert(0, str(RAIZ_DATOS))
 import utils_caso as uc  # noqa: E402
 
+import aumento  # noqa: E402
 import informe  # noqa: E402
 from models.cnn_base import CNNBase, contar_parametros  # noqa: E402
 from preprocesado import preprocesar  # noqa: E402
@@ -104,6 +111,11 @@ def argumentos() -> argparse.Namespace:
     ap.add_argument("--semilla", type=int, default=42)
     ap.add_argument("--pos-weight", action="store_true",
                     help="BCEWithLogitsLoss con pos_weight = N0/N1 de la partición de entrenamiento")
+    ap.add_argument("--aumento", action="store_true",
+                    help="aumento geométrico solo en entrenamiento (aumento.py): volteo horizontal p=0,5 "
+                         "y rotación de hasta ±10°, la misma transformación en las tres fases")
+    ap.add_argument("--weight-decay", type=float, default=0.0,
+                    help="weight decay de AdamW (por defecto 0: equivale a Adam)")
     ap.add_argument("--max-batches", type=int, metavar="N",
                     help="prueba: cada época se recorta a N lotes de entrenamiento y N de validación")
     ap.add_argument("--overfit-batches", type=int, metavar="N",
@@ -121,6 +133,8 @@ def argumentos() -> argparse.Namespace:
     for nombre in ("max_batches", "overfit_batches"):
         if getattr(args, nombre) is not None and getattr(args, nombre) < 1:
             ap.error(f"--{nombre.replace('_', '-')} debe ser >= 1")
+    if args.weight_decay < 0:
+        ap.error("--weight-decay debe ser >= 0")
     args.prueba = args.prueba or bool(args.max_batches or args.overfit_batches)
     return args
 
@@ -253,9 +267,11 @@ def comprobar_preprocesado(fila):
         raise RuntimeError("preprocesado.preprocesar no coincide con utils_caso.cargar_imagen")
 
 
-def entrenar_epoca(modelo, lotes, n_lotes: int, criterio, optimizador, dispositivo) -> dict:
+def entrenar_epoca(modelo, lotes, n_lotes: int, criterio, optimizador, dispositivo, transformar=None) -> dict:
     """Una época sobre `lotes` (DataLoader o lista de lotes fijos), separando el
-    tiempo esperando datos del tiempo de cálculo."""
+    tiempo esperando datos del tiempo de cálculo. `transformar` es el aumento de
+    datos (o None): se aplica a cada lote ya en el dispositivo y solo aquí, nunca
+    en predecir()."""
     modelo.train()
     suma, n, t_datos, t_calculo, primera = 0.0, 0, 0.0, 0.0, None
     cada = n_lotes // 10 if n_lotes >= 20 else 0
@@ -264,6 +280,8 @@ def entrenar_epoca(modelo, lotes, n_lotes: int, criterio, optimizador, dispositi
         t_lote = time.perf_counter()
         t_datos += t_lote - t
         x, y = x.to(dispositivo, non_blocking=True), y.to(dispositivo, non_blocking=True)
+        if transformar is not None:
+            x = transformar(x)
         optimizador.zero_grad(set_to_none=True)
         perdida = criterio(modelo(x).squeeze(1), y)
         perdida.backward()
@@ -308,7 +326,8 @@ def guardar_pesos(ruta: Path, modelo, epoca: int, auc: float, optimizador=None):
 def anadir_fila(ruta: Path, fila: dict):
     tabla = pd.DataFrame([fila])
     if ruta.exists():
-        tabla = pd.concat([pd.read_csv(ruta), tabla], ignore_index=True)
+        # round_trip: releer y reescribir no cambia los decimales de las filas anteriores
+        tabla = pd.concat([pd.read_csv(ruta, float_precision="round_trip"), tabla], ignore_index=True)
     tabla.to_csv(ruta, index=False)
 
 
@@ -391,10 +410,18 @@ def main():
     pos_weight = uc.pos_weight(entrenamiento) if args.pos_weight else None
     criterio = nn.BCEWithLogitsLoss(
         pos_weight=torch.tensor(pos_weight, device=dispositivo) if pos_weight is not None else None)
-    optimizador = torch.optim.Adam(modelo.parameters(), lr=args.lr)
+    # AdamW con weight_decay 0 hace exactamente lo mismo que Adam (la línea base)
+    optimizador = torch.optim.AdamW(modelo.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     paciencia = None if args.overfit_batches else args.paciencia
+
+    # Aumento de datos: generador propio, para no tocar el del barajado ni el global (dropout)
+    semilla_aumento = args.semilla + 1 if args.aumento else None
+    transformar = (functools.partial(aumento.aumentar, generador=torch.Generator().manual_seed(semilla_aumento))
+                   if args.aumento else None)
     log.info(f"Modelo CNNBase: {n_parametros} parámetros entrenables; dispositivo {dispositivo}; "
              f"pos_weight {f'{pos_weight:.4f}' if pos_weight is not None else 'no'}; "
+             f"AdamW weight decay {args.weight_decay:g}; "
+             f"aumento {aumento.etiqueta() + ' (solo entrenamiento)' if args.aumento else 'no'}; "
              f"{n_lotes} lotes de {args.batch_size} por época")
 
     config = {
@@ -411,7 +438,9 @@ def main():
             "filtros": [16, 32, 64, 128],
             "dropout": 0.3,
             "inicializacion": "por defecto de PyTorch",
-            "optimizador": "Adam",
+            "optimizador": "AdamW",
+            "nota_optimizador": "AdamW con weight_decay 0 equivale a Adam (las ejecuciones "
+                                "anteriores a este cambio usaban torch.optim.Adam)",
             "lr": args.lr,
             "betas": list(optimizador.defaults["betas"]),
             "weight_decay": optimizador.defaults["weight_decay"],
@@ -422,7 +451,8 @@ def main():
             "perdida": "BCEWithLogitsLoss",
             "usar_pos_weight": args.pos_weight,
             "perdida_validacion": "el mismo criterio que en entrenamiento",
-            "aumento_datos": None,
+            "aumento_datos": ({**aumento.descripcion(), "semilla_generador": semilla_aumento}
+                              if args.aumento else None),
             "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
             "agregacion_paciente": METODO,
             "umbral": UMBRAL,
@@ -457,7 +487,7 @@ def main():
             torch.cuda.reset_peak_memory_stats(dispositivo)
         t0 = time.perf_counter()
         r = entrenar_epoca(modelo, lotes_fijos if args.overfit_batches else dl_entr, n_lotes,
-                           criterio, optimizador, dispositivo)
+                           criterio, optimizador, dispositivo, transformar)
         if primera is None:
             primera = r["primera"]
             log.info(f"Pérdida del primer lote: {primera:.4f} (referencia ln 2 = 0.6931)")
@@ -528,6 +558,7 @@ def main():
     contexto = {"ejecucion": ejecucion, "fold": args.fold, "modelo": "CNNBase", "n_parametros": n_parametros,
                 "dispositivo": f"{dispositivo} ({config['entorno']['gpu'] or config['entorno']['cpu']})",
                 "pos_weight": None if pos_weight is None else round(pos_weight, 4),
+                "weight_decay": args.weight_decay, "aumento": aumento.etiqueta() if args.aumento else None,
                 "epocas_ejecutadas": len(filas), "mejor_epoca": mejor_epoca}
     final = informe.generar_informe(dir_exp, pd.DataFrame(filas), pred, tasa_cohorte, contexto, UMBRAL, METODO)
     log.info(f"Mejor modelo (validación, por paciente): AUC {final['auc']:.4f} | sens {final['sensibilidad']:.3f} "
@@ -552,8 +583,9 @@ def main():
             "ejecucion": ejecucion, "fecha_hora": config["fecha_hora"],
             "git_commit": config["entorno"]["git_commit"], "dispositivo": config["entorno"]["dispositivo"],
             "modelo": "CNNBase", "n_parametros": n_parametros, "fold_val": args.fold, "semilla": args.semilla,
-            "optimizador": "Adam", "lr": args.lr, "batch_size": args.batch_size, "epocas_max": args.epocas,
-            "paciencia": paciencia, "pos_weight": pos_weight, "aumento_datos": None,
+            "optimizador": "AdamW", "lr": args.lr, "weight_decay": args.weight_decay,
+            "batch_size": args.batch_size, "epocas_max": args.epocas, "paciencia": paciencia,
+            "pos_weight": pos_weight, "aumento_datos": aumento.etiqueta() if args.aumento else None,
             "epocas_ejecutadas": len(filas), "mejor_epoca": mejor_epoca,
             "auc_val": final["auc"], "sensibilidad_val": final["sensibilidad"],
             "especificidad_val": final["especificidad"], "accuracy_val": final["accuracy"],
