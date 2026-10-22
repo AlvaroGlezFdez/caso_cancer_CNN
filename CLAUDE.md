@@ -5,8 +5,8 @@ antes de cualquier tarea. Este archivo resume el estado del proyecto y las
 decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 
 ## Cómo trabajamos: sesiones sin memoria
-- El proyecto se desarrolla en dos máquinas: un portátil sin GPU (solo CPU) y un
-  ordenador con GPU NVIDIA. El código se sincroniza con git: pull al empezar,
+- El proyecto se desarrolla en dos máquinas: un portátil Windows sin GPU (solo CPU)
+  y un ordenador de laboratorio Linux con GPU AMD (ROCm). El código se sincroniza con git: pull al empezar,
   commit y push al terminar.
 - Cada sesión de Claude Code empieza sin ningún contexto del proyecto. Este archivo
   es la única memoria compartida. Al empezar una sesión: lee este archivo entero,
@@ -58,19 +58,30 @@ decisiones ya tomadas: respétalas salvo que el usuario diga lo contrario.
 - Al terminar cada tarea, explica brevemente qué has hecho y por qué, y actualiza
   la sección "Estado actual" de este archivo.
 - Los entrenamientos los lanza el usuario desde la terminal: prepara el código, dale
-  el comando exacto de PowerShell (desde la raíz del repo) y no los ejecutes tú.
+  el comando exacto (PowerShell en el portátil, bash en el laboratorio; desde la
+  raíz del repo) y no los ejecutes tú.
   Pruebas rápidas (--prueba) solo si las pide.
 
 ## Puesta en marcha en un ordenador nuevo
-1. Crear el entorno virtual .venv con Python 3.11.
-2. Sin GPU: .venv\Scripts\python.exe -m pip install -r requirements.txt (versiones
-   exactas del .venv del portátil, con torch 2.14.1+cpu).
-   Si hay GPU NVIDIA (comprobar con nvidia-smi): instalar primero PyTorch con CUDA
-   desde las instrucciones oficiales de pytorch.org (2.14.1 si está disponible) y
-   después requirements.txt SIN la línea de torch (el comando está en su cabecera).
-   Instalarlo tal cual sustituiría torch CUDA por la versión +cpu.
-3. Descargar el dataset con: python descargar_datos.py (queda en breastdcedl/).
-4. Comprobar que torch.cuda.is_available() devuelve True si hay GPU NVIDIA.
+requirements.txt NO incluye torch: torch se instala aparte según la máquina y
+después se instala requirements.txt (versiones exactas del .venv del portátil).
+- Portátil (Windows, solo CPU, PowerShell):
+  1. Entorno virtual .venv con Python 3.11.
+  2. torch 2.14.1 versión CPU con el comando de https://pytorch.org/get-started/locally/.
+  3. .venv\Scripts\python.exe -m pip install -r requirements.txt
+  4. .venv\Scripts\python.exe descargar_datos.py (queda en breastdcedl/).
+- Laboratorio (Linux, bash, GPU AMD Radeon RX 6700 XT):
+  1. Entorno de conda "cancer" (Python 3.11), que ya trae PyTorch 2.14.1+rocm7.14:
+     no hay que instalar torch ni crear .venv. Para ejecutar, sin activar el entorno:
+     /home/aulas/miniconda3/envs/cancer/bin/python (o conda activate cancer).
+  2. python -m pip install -r requirements.txt (hecho el 2026-10-22; torch siguió
+     en +rocm y pip check sin conflictos).
+  3. python descargar_datos.py (hecho el 2026-10-22).
+  4. ROCm se usa a través de la API cuda de PyTorch: torch.cuda.is_available()
+     devuelve True y train.py registra "dispositivo cuda". No hace falta ninguna
+     variable de entorno (ni HSA_OVERRIDE_GFX_VERSION ni otras). Los avisos de
+     MIOpen y libnuma que salen al ejecutar son normales y se ignoran.
+  Los comandos que se den para esta máquina son de bash, no de PowerShell.
 
 ## Estructura del dataset (verificada en la auditoría)
 - breastdcedl/metadata/samples.csv: una fila por corte (sample_id, patient_id,

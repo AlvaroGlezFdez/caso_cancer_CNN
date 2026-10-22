@@ -1,18 +1,15 @@
-# Dependencias del proyecto: versiones exactas del .venv del portátil
-# (Python 3.11, Windows, solo CPU), sacadas con pip freeze el 2026-10-21.
+# Dependencias del proyecto SIN torch: versiones exactas del .venv del portátil
+# (Python 3.11), sacadas con pip freeze el 2026-10-21.
 #
-# Portátil u ordenador sin GPU, desde la raíz del repo:
-#   .venv\Scripts\python.exe -m pip install -r requirements.txt
+# torch NO está en este archivo: se instala aparte según la máquina (ver
+# "Puesta en marcha" en CLAUDE.md), antes de instalar este archivo:
+#   - Portátil (Windows, solo CPU): torch 2.14.1 versión CPU desde pytorch.org.
+#   - Laboratorio (Linux, GPU AMD): el entorno de conda "cancer" ya trae
+#     PyTorch 2.14.1+rocm; no hay que instalar torch.
 #
-# Ordenador con GPU NVIDIA: torch NO se instala desde este archivo (la línea
-# torch==...+cpu dejaría PyTorch sin CUDA). Instala antes PyTorch con CUDA con
-# el comando de las instrucciones oficiales de https://pytorch.org/get-started/locally/
-# (la versión 2.14.1 si está disponible) y después el resto, sin la línea de torch:
-#   Get-Content requirements.txt | Where-Object { $_ -notmatch '^torch==' } | Set-Content -Encoding utf8 $env:TEMP\req_gpu.txt
-#   .venv\Scripts\python.exe -m pip install -r $env:TEMP\req_gpu.txt
-
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.14.1+cpu
+# Después, desde la raíz del repo:
+#   Portátil:     .venv\Scripts\python.exe -m pip install -r requirements.txt
+#   Laboratorio:  conda run -n cancer python -m pip install -r requirements.txt
 
 certifi==2026.7.22
 charset-normalizer==3.5.2
