@@ -196,19 +196,49 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
     completa (8.759 cortes de entrenamiento + 2.186 de validación), ~20 min por
     ejecución de 30 épocas, ~1 h 20 min las cuatro (frente a ~10 min por época
     en la CPU del portátil).
-- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no):
-  1. Cuatro entrenamientos de 30 épocas máx. y paciencia 7, cada uno con UNA
-     diferencia respecto a la línea base. El 2026-10-22 el usuario decidió lanzar
-     también la línea base en GPU (baseline_30ep_gpu, sin flags) para comparar
-     en el mismo dispositivo, porque en GPU los resultados no son idénticos a los
-     de CPU aunque la semilla sea la misma. Desde la raíz, en bash:
-     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for a in "--pos-weight --nombre baseline_pw_30ep_gpu" "--aumento --nombre aumento_30ep_gpu" "--weight-decay 1e-4 --nombre wd_30ep_gpu" "--nombre baseline_30ep_gpu"; do $P train.py $a --epocas 30 --paciencia 7; done`
-  2. Al terminar: commit y push de experimentos/ desde el laboratorio (pesos y
-     predicciones se quedan en outputs/ del laboratorio) e informar de los
-     resultados frente a baseline_30ep_gpu (y baseline_30ep_cpu como
-     referencia): AUC con IC, "solo cohorte", por cohorte, sensibilidad y
-     especificidad, Brier y calibración, y la época de mínima pérdida de
-     validación.
+- Hecho (laboratorio, GPU AMD, 2026-10-22, commit 843fd52): los cuatro
+  entrenamientos de 30 épocas máx. y paciencia 7, fold 0 (~29 s/época, ~8,5 min
+  por ejecución). Pesos y predicciones en outputs/runs/ del laboratorio.
+  Todos paran en la época 17 con mejor época 10, igual que baseline_30ep_cpu: no
+  es un error, la misma semilla da el mismo orden de lotes y las curvas de AUC de
+  validación están correlacionadas entre ejecuciones (Spearman 0,71-0,86 entre
+  las probabilidades por paciente). El pico de la época 10 es en parte suerte del
+  orden de datos. AUC por paciente con IC95 por bootstrap (2.000 remuestreos por
+  paciente; script fuera del repo):
+  | ejecución | AUC (IC95) | sens / esp (0,5) | prob media | Brier |
+  | baseline_30ep_gpu | 0,598 (0,52-0,68) | 0,06 / 0,93 | 0,30 | 0,209 |
+  | baseline_pw_30ep_gpu | 0,579 (0,50-0,66) | 0,84 / 0,26 | 0,62 | 0,325 |
+  | aumento_30ep_gpu | 0,577 (0,50-0,65) | 0,00 / 0,99 | 0,25 | 0,208 |
+  | wd_30ep_gpu | 0,586 (0,51-0,67) | 0,20 / 0,85 | 0,38 | 0,215 |
+  (baseline_30ep_cpu: 0,603, 0,45 / 0,70, 0,44, 0,228; "solo cohorte" 0,534;
+  tasa real de pCR 0,29; predecir siempre la tasa da Brier 0,207.)
+  - Diferencias pareadas frente a baseline_30ep_gpu (bootstrap): pos_weight
+    -0,019 (IC -0,09 a 0,05), aumento -0,021 (-0,08 a 0,04), weight decay -0,012
+    (-0,06 a 0,04). Ninguna variante mejora; todas las diferencias son ruido.
+  - Los AUC por época oscilan entre ~0,48 y 0,60 (media ~0,53-0,55, cerca de
+    "solo cohorte"); el mejor AUC es un máximo elegido sobre una curva ruidosa.
+  - Sobreajuste: la pérdida de entrenamiento baja sin parar (0,61 -> 0,46 en la
+    línea base) y la de validación sube desde la época ~3-10. El aumento frena
+    el descenso de la pérdida de entrenamiento (0,55 en la época 17) pero no
+    mejora la validación. Weight decay 1e-4 con AdamW casi no cambia nada
+    (curvas casi iguales a la línea base): con lr 1e-3 es demasiado pequeño.
+  - pos_weight desplaza las probabilidades hacia arriba (media 0,62) sin cambiar
+    el AUC; su pérdida de validación es ponderada y no se compara con las demás.
+  - Calibración de la línea base en GPU: media 0,30 frente a 0,29, pero Brier
+    0,209, prácticamente el de predecir la tasa constante: casi no hay
+    información útil más allá de la prevalencia. La "mala calibración" de
+    baseline_30ep_cpu (0,44) era propia de la época elegida.
+  - Sensibilidad y especificidad con umbral 0,5 saltan de una época a otra
+    (las probabilidades se concentran cerca del umbral): no sirven para comparar.
+  - Por cohorte el AUC no es interpretable con fold 0: I-SPY1 tiene 4 pCR (AUC
+    0,41-0,75 según la ejecución) y Duke 11.
+  - GPU frente a CPU en la línea base: 0,598 frente a 0,603, compatible.
+- Siguiente paso: lo decide el usuario a la vista de estos resultados (ver
+  decisiones pendientes). Sin entrenamientos pendientes.
+- 2026-10-22: en el laboratorio apareció un cambio no intencionado en .gitignore
+  ("experimentos/" en lugar de "!experimentos/**/train.log"), que hacía que git
+  ignorase las carpetas nuevas de experimentos/. Se deshizo con git restore. Si
+  las carpetas nuevas no salen en git status, revisar .gitignore.
 - Decisiones pendientes (las toma el usuario; no decidir por él):
   - Tras los resultados: si se usa pos_weight, qué regularización se adopta
     (aumento, weight decay, ambos o ninguno) y si hacen falta más pruebas (otros
