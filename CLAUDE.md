@@ -233,8 +233,26 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
   - Por cohorte el AUC no es interpretable con fold 0: I-SPY1 tiene 4 pCR (AUC
     0,41-0,75 según la ejecución) y Duke 11.
   - GPU frente a CPU en la línea base: 0,598 frente a 0,603, compatible.
-- Siguiente paso: lo decide el usuario a la vista de estos resultados (ver
-  decisiones pendientes). Sin entrenamientos pendientes.
+- Decidido el 2026-10-22 (usuario), a la vista de lo anterior: comparar línea
+  base y aumento con validación cruzada de 5 folds, sin cambiar nada más del
+  diseño ni el criterio de parada. train.py ya tenía --fold (0-4); comprobado que
+  uc.particion da en cada fold ~219 pacientes de validación (59-75 con pCR), sin
+  solape con entrenamiento ni con test, y que las validaciones de los 5 folds
+  son disjuntas.
+- Preparado (laboratorio, 2026-10-22): cv_resumen.py lee de experimentos.csv
+  las 10 ejecuciones cv_* (si un nombre se repite, usa la más reciente y avisa)
+  y escribe experimentos/cv_resumen.csv y cv_resumen.md: AUC por fold de cada
+  configuración, media y desviación típica (ddof=1), diferencia aumento - línea
+  base por fold y AUC "solo cohorte" por fold y su media. Comprueba que solo
+  cambian el fold y el aumento. Solo se ha comprobado la sintaxis; aún no se ha
+  ejecutado.
+- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no):
+  1. Diez entrenamientos (~29 s/época; entre ~1 h 25 min si paran hacia la
+     época 17 como hasta ahora y ~2 h 30 min si llegan todos a 30). Desde la raíz:
+     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for c in baseline aumento; do for f in 0 1 2 3 4; do x=""; [ $c = aumento ] && x=--aumento; $P train.py $x --fold $f --nombre cv_${c}_f$f --epocas 30 --paciencia 7; done; done`
+     cv_baseline_f0 repite exactamente la configuración de baseline_30ep_gpu:
+     compararlas indica cuánto cambia el resultado por el no determinismo de la GPU.
+  2. Al terminar: `$P cv_resumen.py`, commit y push de experimentos/ e informar.
 - 2026-10-22: en el laboratorio apareció un cambio no intencionado en .gitignore
   ("experimentos/" en lugar de "!experimentos/**/train.log"), que hacía que git
   ignorase las carpetas nuevas de experimentos/. Se deshizo con git restore. Si
@@ -248,8 +266,9 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
     validación interna, nunca con test.
   - Cuándo y en qué orden lanzar los experimentos de arquitectura previstos
     (estrecha 8->64, quinto bloque, realce explícito).
-  - Si el modelo final se valida solo con el fold 0 o con validación cruzada de
-    5 folds.
+  - Validación del modelo final: para comparar línea base y aumento se usa ya
+    validación cruzada de 5 folds (2026-10-22); falta decidir si se usa también
+    para el resto de experimentos y cómo se elige el modelo final.
   - Qué modelo se cierra como final y cuándo se hace la evaluación única en test.
   - App web: framework (Streamlit, Gradio...) y dónde desplegarla (debe ser
     accesible por URL; requisitos en GUIA.md C6).
