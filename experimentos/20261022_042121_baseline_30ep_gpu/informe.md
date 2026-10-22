@@ -1,8 +1,8 @@
 # Informe: 20261022_042121_baseline_30ep_gpu
 
 - Validación interna: fold 0 (219 pacientes). Test no se ha usado.
-- Modelo: CNNBase (98.049 parámetros), dispositivo cuda (AMD Radeon RX 6700 XT).
-- pos_weight: no; épocas ejecutadas: 17; mejor época: 10.
+- Modelo: CNNBase (98.049 parámetros, 4 bloques, realce no), dispositivo cuda (AMD Radeon RX 6700 XT).
+- pos_weight: no; épocas ejecutadas: 17; mejor época: 10 (criterio de selección `auc`).
 - Optimizador AdamW, weight decay 0; aumento de datos: no.
 - Métricas por paciente: agregación `mean` de las probabilidades de sus cortes, umbral 0.5.
 
@@ -11,6 +11,8 @@
 | métrica | valor |
 |---|---|
 | AUC | 0.598 |
+| average precision (AP) | 0.346 |
+| AP del azar (tasa real de pCR) | 0.292 |
 | sensibilidad | 0.062 |
 | especificidad | 0.929 |
 | accuracy | 0.676 |
@@ -46,5 +48,7 @@ AUC solo cohorte: **0.534** frente a **0.598** del modelo.
 ![Curvas de aprendizaje](curvas_aprendizaje.png)
 
 ![Matriz de confusión](matriz_confusion.png) ![Curva ROC](curva_roc.png)
+
+![Curva precisión-sensibilidad](curva_pr.png)
 
 ![Calibración](calibracion.png)

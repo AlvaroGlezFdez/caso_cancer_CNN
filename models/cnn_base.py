@@ -10,6 +10,14 @@ Se entrena con BCEWithLogitsLoss.
 
 98.049 parámetros entrenables. Inicialización: la de PyTorch por defecto.
 
+Variantes (cada una cambia una sola cosa respecto a la línea base):
+  bloques=5    un quinto bloque idéntico, de 128 a 128 filtros, antes del GAP
+               (resolución 16->8). 245.889 parámetros.
+  realce=True  dentro del modelo, antes del primer bloque, la entrada pasa a ser
+               PRE, EARLY-PRE y LATE-EARLY (en ese orden) en lugar de PRE, EARLY
+               y LATE. Sin parámetros: siguen siendo 98.049. La entrada del
+               modelo y el preprocesado no cambian.
+
 Comprobación, desde la raíz del repositorio:
 
     python -m models.cnn_base
@@ -20,8 +28,9 @@ from __future__ import annotations
 import torch
 from torch import nn
 
-FILTROS = (16, 32, 64, 128)
-PARAMETROS_ESPERADOS = 98_049
+FILTROS_POR_BLOQUES = {4: (16, 32, 64, 128), 5: (16, 32, 64, 128, 128)}
+FILTROS = FILTROS_POR_BLOQUES[4]
+PARAMETROS_ESPERADOS = {4: 98_049, 5: 245_889}
 
 
 def bloque(entrada: int, salida: int) -> nn.Sequential:
@@ -33,9 +42,21 @@ def bloque(entrada: int, salida: int) -> nn.Sequential:
     )
 
 
+class Realce(nn.Module):
+    """(PRE, EARLY, LATE) -> (PRE, EARLY-PRE, LATE-EARLY). Sin parámetros."""
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        pre, early, late = x[:, 0:1], x[:, 1:2], x[:, 2:3]
+        return torch.cat([pre, early - pre, late - early], dim=1)
+
+
 class CNNBase(nn.Module):
-    def __init__(self, canales: int = 3, filtros: tuple[int, ...] = FILTROS, dropout: float = 0.3):
+    def __init__(self, canales: int = 3, filtros: tuple[int, ...] = FILTROS, dropout: float = 0.3,
+                 realce: bool = False):
         super().__init__()
+        # Identity y Realce no tienen parámetros ni consumen números aleatorios: la
+        # inicialización y los nombres del state_dict de la línea base no cambian.
+        self.entrada = Realce() if realce else nn.Identity()
         capas, entrada = [], canales
         for salida in filtros:
             capas.append(bloque(entrada, salida))
@@ -49,7 +70,14 @@ class CNNBase(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.cabeza(self.extractor(x))           # (B, 1) logits
+        return self.cabeza(self.extractor(self.entrada(x)))     # (B, 1) logits
+
+
+def crear_modelo(bloques: int = 4, realce: bool = False) -> CNNBase:
+    """La línea base (bloques=4, realce=False) o una de sus variantes."""
+    if bloques not in FILTROS_POR_BLOQUES:
+        raise ValueError(f"bloques debe ser uno de {sorted(FILTROS_POR_BLOQUES)}")
+    return CNNBase(filtros=FILTROS_POR_BLOQUES[bloques], realce=realce)
 
 
 def contar_parametros(modelo: nn.Module) -> int:
@@ -57,11 +85,17 @@ def contar_parametros(modelo: nn.Module) -> int:
 
 
 if __name__ == "__main__":
-    modelo = CNNBase()
-    print(modelo)
-    n = contar_parametros(modelo)
-    salida = modelo.eval()(torch.zeros(2, 3, 256, 256))
-    print(f"Parámetros entrenables: {n:,}".replace(",", "."))
-    print(f"Salida para una entrada (2, 3, 256, 256): {tuple(salida.shape)}")
-    assert n == PARAMETROS_ESPERADOS, f"se esperaban {PARAMETROS_ESPERADOS} parámetros, hay {n}"
-    assert salida.shape == (2, 1)
+    print(crear_modelo())
+    x = torch.rand(2, 3, 256, 256)
+    for bloques, realce in ((4, False), (5, False), (4, True)):
+        modelo = crear_modelo(bloques, realce).eval()
+        n = contar_parametros(modelo)
+        salida = modelo(x)
+        print(f"bloques={bloques} realce={realce}: {n:_} parámetros entrenables, ".replace("_", ".")
+              + f"salida {tuple(salida.shape)}")
+        assert n == PARAMETROS_ESPERADOS[bloques], f"se esperaban {PARAMETROS_ESPERADOS[bloques]} parámetros, hay {n}"
+        assert salida.shape == (2, 1)
+    r = Realce()(x)
+    assert torch.equal(r[:, 0], x[:, 0]) and torch.equal(r[:, 1], x[:, 1] - x[:, 0])
+    assert torch.equal(r[:, 2], x[:, 2] - x[:, 1])
+    print("Realce: canales PRE, EARLY-PRE, LATE-EARLY comprobados")

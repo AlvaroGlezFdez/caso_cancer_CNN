@@ -1,8 +1,8 @@
 # Informe: 20261022_060058_cv_aumento_f2
 
 - Validación interna: fold 2 (220 pacientes). Test no se ha usado.
-- Modelo: CNNBase (98.049 parámetros), dispositivo cuda (AMD Radeon RX 6700 XT).
-- pos_weight: no; épocas ejecutadas: 12; mejor época: 2.
+- Modelo: CNNBase (98.049 parámetros, 4 bloques, realce no), dispositivo cuda (AMD Radeon RX 6700 XT).
+- pos_weight: no; épocas ejecutadas: 12; mejor época: 2 (criterio de selección `auc`).
 - Optimizador AdamW, weight decay 0; aumento de datos: volteo_h0.5_rot10.
 - Métricas por paciente: agregación `mean` de las probabilidades de sus cortes, umbral 0.5.
 
@@ -11,6 +11,8 @@
 | métrica | valor |
 |---|---|
 | AUC | 0.600 |
+| average precision (AP) | 0.332 |
+| AP del azar (tasa real de pCR) | 0.268 |
 | sensibilidad | 0.000 |
 | especificidad | 1.000 |
 | accuracy | 0.732 |
@@ -46,5 +48,7 @@ AUC solo cohorte: **0.538** frente a **0.600** del modelo.
 ![Curvas de aprendizaje](curvas_aprendizaje.png)
 
 ![Matriz de confusión](matriz_confusion.png) ![Curva ROC](curva_roc.png)
+
+![Curva precisión-sensibilidad](curva_pr.png)
 
 ![Calibración](calibracion.png)

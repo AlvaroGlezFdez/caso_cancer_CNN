@@ -6,17 +6,24 @@ Uso, desde la raíz del repositorio:
     python train.py --nombre baseline_pw --pos-weight
     python train.py --nombre aumento --aumento
     python train.py --nombre wd --weight-decay 1e-4
+    python train.py --nombre cinco_bloques --bloques 5
+    python train.py --nombre realce --realce
+    python train.py --nombre criterio_antiguo --criterio auc
     python train.py --nombre prueba_max5 --max-batches 5 --epocas 2      # prueba
     python train.py --nombre prueba_overfit --overfit-batches 2 --epocas 50
     python train.py --nombre prueba_epoca --epocas 1 --prueba
 
-Los valores por defecto son los de "Decisiones tomadas" en CLAUDE.md: AdamW con
-weight decay 0 (equivale a Adam), lr 1e-3, batch 32, 30 épocas como máximo,
-early stopping con paciencia 7 sobre el AUC de validación por paciente
-(agregación media), semilla 42, fold 0, sin aumento de datos y sin pos_weight.
+Los valores por defecto son los de "Decisiones tomadas" en CLAUDE.md: CNNBase de
+4 bloques, AdamW con weight decay 0 (equivale a Adam), lr 1e-3, batch 32, 30
+épocas como máximo, best.pt y early stopping (paciencia 7) con el criterio
+auc_suavizado (seleccion.py), semilla 42, fold 0, sin aumento de datos, sin
+pos_weight y sin realce.
 
 --aumento aplica aumento.aumentar (volteo horizontal y rotación de hasta ±10°,
 la misma transformación en las tres fases) solo a los lotes de entrenamiento.
+--bloques 5 añade un quinto bloque de 128 a 128 filtros antes del GAP y
+--realce hace que el modelo use PRE, EARLY-PRE y LATE-EARLY (models/cnn_base.py).
+--criterio auc reproduce la selección anterior al 2026-10-22 (AUC de cada época).
 
 Una ejecución normal escribe:
   experimentos/<fecha_hora>_<nombre>/  config.json, train.log, metricas_epoca.csv
@@ -68,7 +75,8 @@ import utils_caso as uc  # noqa: E402
 
 import aumento  # noqa: E402
 import informe  # noqa: E402
-from models.cnn_base import CNNBase, contar_parametros  # noqa: E402
+import seleccion  # noqa: E402
+from models.cnn_base import FILTROS_POR_BLOQUES, PARAMETROS_ESPERADOS, contar_parametros, crear_modelo  # noqa: E402
 from preprocesado import preprocesar  # noqa: E402
 
 DIR_EXPERIMENTOS = RAIZ_REPO / "experimentos"
@@ -107,7 +115,15 @@ def argumentos() -> argparse.Namespace:
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--paciencia", type=int, default=7,
-                    help="épocas sin mejorar el AUC de validación por paciente antes de parar")
+                    help="épocas sin mejorar el criterio de selección antes de parar")
+    ap.add_argument("--criterio", choices=seleccion.CRITERIOS, default="auc_suavizado",
+                    help="criterio para best.pt y el early stopping (seleccion.py): auc_suavizado = media "
+                         "del AUC de validación por paciente con la época anterior y la siguiente; "
+                         "auc = el de la propia época (criterio anterior)")
+    ap.add_argument("--bloques", type=int, choices=sorted(FILTROS_POR_BLOQUES), default=4,
+                    help="bloques convolucionales; con 5 se añade uno de 128 a 128 filtros antes del GAP")
+    ap.add_argument("--realce", action="store_true",
+                    help="el modelo transforma su entrada en PRE, EARLY-PRE y LATE-EARLY antes del primer bloque")
     ap.add_argument("--semilla", type=int, default=42)
     ap.add_argument("--pos-weight", action="store_true",
                     help="BCEWithLogitsLoss con pos_weight = N0/N1 de la partición de entrenamiento")
@@ -315,9 +331,9 @@ def predecir(modelo, lotes, criterio, dispositivo) -> tuple[np.ndarray, float]:
     return probs, suma / len(probs)
 
 
-def guardar_pesos(ruta: Path, modelo, epoca: int, auc: float, optimizador=None):
-    estado = {"modelo": modelo.state_dict(), "arquitectura": type(modelo).__name__,
-              "n_parametros": contar_parametros(modelo), "epoca": epoca, "auc_val": auc}
+def guardar_pesos(ruta: Path, pesos: dict, arquitectura: dict, epoca: int, auc: float, optimizador=None):
+    """`pesos` es un state_dict; `arquitectura` lo necesario para reconstruir el modelo."""
+    estado = {"modelo": pesos, **arquitectura, "epoca": epoca, "auc_val": auc}
     if optimizador is not None:
         estado["optimizador"] = optimizador.state_dict()
     torch.save(estado, ruta)
@@ -405,8 +421,12 @@ def main():
         n_lotes = min(len(dl_entr), args.max_batches or len(dl_entr))
 
     # Modelo, pérdida y optimizador
-    modelo = CNNBase().to(dispositivo)
+    modelo = crear_modelo(args.bloques, args.realce).to(dispositivo)
     n_parametros = contar_parametros(modelo)
+    if n_parametros != PARAMETROS_ESPERADOS[args.bloques]:
+        raise RuntimeError(f"{n_parametros} parámetros; se esperaban {PARAMETROS_ESPERADOS[args.bloques]}")
+    arquitectura = {"arquitectura": "CNNBase", "bloques": args.bloques, "realce": args.realce,
+                    "n_parametros": n_parametros}
     pos_weight = uc.pos_weight(entrenamiento) if args.pos_weight else None
     criterio = nn.BCEWithLogitsLoss(
         pos_weight=torch.tensor(pos_weight, device=dispositivo) if pos_weight is not None else None)
@@ -418,7 +438,9 @@ def main():
     semilla_aumento = args.semilla + 1 if args.aumento else None
     transformar = (functools.partial(aumento.aumentar, generador=torch.Generator().manual_seed(semilla_aumento))
                    if args.aumento else None)
-    log.info(f"Modelo CNNBase: {n_parametros} parámetros entrenables; dispositivo {dispositivo}; "
+    log.info(f"Modelo CNNBase: {args.bloques} bloques, realce {'sí' if args.realce else 'no'}, "
+             f"{n_parametros} parámetros entrenables; dispositivo {dispositivo}; "
+             f"criterio {args.criterio}, paciencia {paciencia}; "
              f"pos_weight {f'{pos_weight:.4f}' if pos_weight is not None else 'no'}; "
              f"AdamW weight decay {args.weight_decay:g}; "
              f"aumento {aumento.etiqueta() + ' (solo entrenamiento)' if args.aumento else 'no'}; "
@@ -435,7 +457,11 @@ def main():
         "n_parametros": n_parametros,
         "hiperparametros": {
             "modelo": "CNNBase",
-            "filtros": [16, 32, 64, 128],
+            "bloques": args.bloques,
+            "filtros": list(FILTROS_POR_BLOQUES[args.bloques]),
+            "realce": args.realce,
+            "entrada_primer_bloque": ("PRE, EARLY-PRE, LATE-EARLY (calculados dentro del modelo)"
+                                      if args.realce else "PRE, EARLY, LATE"),
             "dropout": 0.3,
             "inicializacion": "por defecto de PyTorch",
             "optimizador": "AdamW",
@@ -447,7 +473,9 @@ def main():
             "batch_size": args.batch_size,
             "epocas_max": args.epocas,
             "paciencia": paciencia,
-            "criterio_parada": f"AUC de validación por paciente (agregación {METODO})",
+            "criterio_seleccion": args.criterio,
+            "criterio_parada": f"{seleccion.DESCRIPCION[args.criterio]} (agregación {METODO}); "
+                               "decide best.pt y el early stopping",
             "perdida": "BCEWithLogitsLoss",
             "usar_pos_weight": args.pos_weight,
             "perdida_validacion": "el mismo criterio que en entrenamiento",
@@ -476,10 +504,32 @@ def main():
     informe.guardar_json(ruta_config, config)
     log.info(f"Entorno: {config['entorno']}")
 
-    # Bucle de épocas
+    # Bucle de épocas. El criterio (seleccion.py) puede fijar el valor de una época
+    # un paso después (auc_suavizado necesita el AUC de la siguiente): hasta
+    # entonces se guardan en `pendientes` sus pesos y sus predicciones.
     monitor = MonitorRecursos()
     filas, primera = [], None
-    mejor_epoca, mejor_valor, mejor_probs, sin_mejora = None, -np.inf, None, 0
+    sel = seleccion.Seleccion(args.criterio, paciencia)
+    pendientes, mejor_probs, parada_temprana = {}, None, False
+
+    def fijar(fijadas) -> str:
+        """Anota en `filas` el valor del criterio de las épocas fijadas, guarda
+        best.pt si alguna mejora y devuelve el texto para el log."""
+        nonlocal mejor_probs
+        texto = ""
+        for e, v, mejora in fijadas:
+            filas[e - 1].update(auc_criterio=v, mejor=mejora)
+            if mejora:
+                pesos, mejor_probs = pendientes[e]
+                guardar_pesos(dir_out / "best.pt", pesos, arquitectura, e, filas[e - 1]["auc_val"])
+            if args.criterio == "auc":
+                texto += " | mejor" if mejora else ""
+            else:
+                texto += f" | {args.criterio} época {e} {v:.4f}" + (" mejor" if mejora else "")
+            del pendientes[e]
+        pd.DataFrame(filas).to_csv(dir_exp / "metricas_epoca.csv", index=False)
+        return texto
+
     t_inicio = time.perf_counter()
     for epoca in range(1, args.epocas + 1):
         monitor.iniciar()
@@ -498,14 +548,8 @@ def main():
         recursos = monitor.detener()
 
         auc = ev["auc"]
-        valor = auc if np.isfinite(auc) else -np.inf
-        mejora = mejor_epoca is None or valor > mejor_valor
-        if mejora:
-            mejor_epoca, mejor_valor, mejor_probs, sin_mejora = epoca, valor, probs, 0
-            guardar_pesos(dir_out / "best.pt", modelo, epoca, auc)
-        else:
-            sin_mejora += 1
-        guardar_pesos(dir_out / "last.pt", modelo, epoca, auc, optimizador)
+        pendientes[epoca] = ({k: v.detach().clone() for k, v in modelo.state_dict().items()}, probs)
+        guardar_pesos(dir_out / "last.pt", modelo.state_dict(), arquitectura, epoca, auc, optimizador)
 
         filas.append({
             "epoca": epoca,
@@ -522,18 +566,24 @@ def main():
             "imagenes_s": r["imagenes"] / (r["t_datos"] + r["t_calculo"]),
             **recursos,
             "gpu_mem_max_mb": torch.cuda.max_memory_allocated(dispositivo) / 2**20 if cuda else np.nan,
-            "mejor": mejora,
+            "auc_criterio": np.nan,                   # valor del criterio, cuando se fija
+            "mejor": False,
         })
-        pd.DataFrame(filas).to_csv(dir_exp / "metricas_epoca.csv", index=False)
+        texto = fijar(sel.anadir(auc))
         f = filas[-1]
         log.info(f"Época {epoca}/{args.epocas} | pérdida entr {f['perdida_entr']:.4f} val {perdida_val:.4f} | "
                  f"AUC val {auc:.4f} sens {f['sensibilidad_val']:.3f} esp {f['especificidad_val']:.3f} | "
                  f"{f['tiempo_epoca_s']:.0f} s (datos {r['t_datos']:.0f}, cálculo {r['t_calculo']:.0f}, "
                  f"val {f['tiempo_val_s']:.0f}) | {f['imagenes_s']:.1f} img/s | CPU {f['cpu_pct_medio']:.0f} % | "
-                 f"RAM {f['ram_max_mb']:.0f} MB" + (" | mejor" if mejora else ""))
-        if paciencia and sin_mejora >= paciencia:
-            log.info(f"Early stopping: {paciencia} épocas sin mejorar el AUC de validación")
+                 f"RAM {f['ram_max_mb']:.0f} MB" + texto)
+        if sel.parar:
+            parada_temprana = True
+            log.info(f"Early stopping: {paciencia} épocas sin mejorar el criterio {args.criterio}")
             break
+    texto = fijar(sel.cerrar())
+    if texto:
+        log.info("Al terminar, con las épocas disponibles" + texto)
+    mejor_epoca = sel.mejor_epoca
     tiempo_total = time.perf_counter() - t_inicio
 
     if args.overfit_batches:
@@ -556,23 +606,26 @@ def main():
          .to_csv(dir_out / "predicciones_val.csv", index=False))
 
     contexto = {"ejecucion": ejecucion, "fold": args.fold, "modelo": "CNNBase", "n_parametros": n_parametros,
+                "bloques": args.bloques, "realce": args.realce, "criterio": args.criterio,
                 "dispositivo": f"{dispositivo} ({config['entorno']['gpu'] or config['entorno']['cpu']})",
                 "pos_weight": None if pos_weight is None else round(pos_weight, 4),
                 "weight_decay": args.weight_decay, "aumento": aumento.etiqueta() if args.aumento else None,
                 "epocas_ejecutadas": len(filas), "mejor_epoca": mejor_epoca}
     final = informe.generar_informe(dir_exp, pd.DataFrame(filas), pred, tasa_cohorte, contexto, UMBRAL, METODO)
-    log.info(f"Mejor modelo (validación, por paciente): AUC {final['auc']:.4f} | sens {final['sensibilidad']:.3f} "
-             f"| esp {final['especificidad']:.3f} | Brier {final['brier']:.4f} | "
+    log.info(f"Mejor modelo (validación, por paciente): AUC {final['auc']:.4f} | AP {final['average_precision']:.4f} "
+             f"| sens {final['sensibilidad']:.3f} | esp {final['especificidad']:.3f} | Brier {final['brier']:.4f} | "
              f"AUC solo cohorte {final['auc_solo_cohorte']:.4f}")
 
     config["resultado"] = {
         "perdida_primer_lote": primera,
         "epocas_ejecutadas": len(filas),
         "mejor_epoca": mejor_epoca,
-        "parada_temprana": bool(paciencia) and sin_mejora >= paciencia,
+        "valor_criterio_mejor_epoca": sel.mejor_valor,
+        "parada_temprana": parada_temprana,
         "tiempo_total_s": tiempo_total,
         "tiempo_medio_epoca_s": float(np.mean([f["tiempo_epoca_s"] for f in filas])),
         "auc_val": final["auc"],
+        "average_precision_val": final["average_precision"],
         "auc_solo_cohorte": final["auc_solo_cohorte"],
     }
     config["sha256"] = {n: sha256(dir_out / n) for n in ("best.pt", "last.pt")}
@@ -593,6 +646,10 @@ def main():
             "auc_solo_cohorte": final["auc_solo_cohorte"],
             **{f"auc_{c}": v for c, v in final["auc_por_cohorte"].items()},
             "tiempo_total_min": tiempo_total / 60,
+            # Columnas añadidas el 2026-10-22: en las filas anteriores quedan vacías
+            # (equivalen a criterio auc, 4 bloques, sin realce).
+            "criterio": args.criterio, "bloques": args.bloques, "realce": args.realce,
+            "average_precision_val": final["average_precision"],
         })
         log.info("Fila añadida a experimentos/experimentos.csv")
     log.info(f"Hecho en {tiempo_total / 60:.1f} min. Resultados en {relativa(dir_exp)}"

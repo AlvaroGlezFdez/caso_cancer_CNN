@@ -113,18 +113,34 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
   filtros 3->16->32->64->128; AdaptiveAvgPool2d(1) -> Dropout(0.3) -> Linear(128, 1).
 - Entrenamiento por defecto: AdamW con weight decay 0 (equivale a Adam: comprobado
   bit a bit), lr 1e-3, batch 32, máximo 30 épocas, early stopping con paciencia 7
-  vigilando el AUC de validación por paciente (agregación media), semilla 42, sin
-  aumento de datos.
+  (en los experimentos de validación cruzada se usa --paciencia 10), semilla 42,
+  sin aumento de datos.
+- Criterio de selección (decidido el 2026-10-22; train.py --criterio, seleccion.py):
+  auc_suavizado, la media del AUC de validación por paciente (agregación media) de
+  cada época con la anterior y la siguiente (en los extremos, las disponibles).
+  Decide best.pt y el early stopping. --criterio auc reproduce el anterior (AUC de
+  la propia época; comprobado idéntico al código antiguo).
 - Contra el sobreajuste (decidido el 2026-10-21), cada uno por separado:
   - Aumento geométrico (--aumento): volteo horizontal p=0,5 y rotación uniforme de
     hasta ±10°, la misma transformación en las 3 fases, solo en entrenamiento.
     Nada de brillo ni contraste.
   - Weight decay 1e-4 (--weight-decay 1e-4) con AdamW.
-- Validación interna: fold 0 fijo para comparar todas las variantes.
+  - 2026-10-22: el aumento de datos queda DESCARTADO por la validación cruzada de
+    5 folds (no mejora el AUC: -0,015 de media, IC95 -0,054 a +0,025). Los
+    experimentos siguientes van sin aumento.
+- Validación interna: hasta el 2026-10-21, fold 0 fijo. Desde el 2026-10-22 las
+  variantes se comparan con validación cruzada de 5 folds (train.py --fold,
+  cv_resumen.py).
 - Normalización: solo dividir entre 255.
 - Experimentos previstos, cambiando una sola cosa cada vez: con y sin pos_weight
   (obligatorio); versión estrecha 8->64 filtros; quinto bloque; realce explícito
   (EARLY-PRE y LATE-EARLY como canales internos).
+  - Quinto bloque (--bloques 5): un bloque idéntico de 128 a 128 filtros antes del
+    GAP; 245.889 parámetros.
+  - Realce (--realce): dentro del modelo, antes del primer bloque, la entrada pasa
+    a PRE, EARLY-PRE, LATE-EARLY (en ese orden); 98.049 parámetros; la entrada del
+    modelo y el preprocesado no cambian.
+  - lr 3e-4 (--lr 3e-4).
 - Evaluación: además de las métricas globales, métricas por cohorte y AUC de la
   referencia "solo cohorte".
 
@@ -291,8 +307,59 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
     en pérdidas y AUC de las 17 épocas comunes). En esta GPU AMD con ROCm el
     entrenamiento es reproducible; para medir la variabilidad del entrenamiento
     habría que cambiar la semilla.
-- Siguiente paso: lo decide el usuario a la vista de la validación cruzada.
-  Sin entrenamientos pendientes.
+- Hecho (laboratorio, 2026-10-22, commit en el que se añade esta línea): a
+  petición del usuario, tras la validación cruzada.
+  - Criterio auc_suavizado (seleccion.py, train.py --criterio, por defecto). Con
+    él la decisión sobre la época e se toma al terminar la e+1; train.py guarda
+    los pesos de la época anterior hasta entonces. metricas_epoca.csv tiene una
+    columna auc_criterio con el valor del criterio de cada época.
+  - Reconstrucción del criterio en las 10 ejecuciones cv_baseline y cv_aumento
+    (experimentos/cv_resumen.md y cv_criterio_suavizado.csv): solo es exacta en
+    2 de 10 (cv_baseline_f2 y cv_aumento_f2). En las demás, el valor suavizado
+    de la última época entrenada necesita el AUC de una época que no se entrenó.
+    En 3 la elección depende solo de esa época (se mantiene salvo AUC > 0,563
+    en baseline f0, > 0,669 en f1 y > 0,543 en aumento f0); en 5 harían falta
+    varias épocas más. Media provisional: línea base 0,586, aumento 0,564.
+    seleccion.simular reproduce exactamente la época elegida y la de parada de
+    las 16 ejecuciones anteriores con el criterio auc, y coincide con train.py en
+    las pruebas con auc_suavizado.
+  - Curvas de precisión-sensibilidad: curva_pr.png y average_precision en el
+    informe de cada ejecución (y en experimentos.csv como average_precision_val);
+    en cv_resumen, AP por fold, media y DT, y cv_curvas_pr.png. AP de la
+    validación cruzada: línea base 0,396 (DT 0,045), aumento 0,363 (DT 0,033),
+    azar 0,294.
+  - Escalas fijas en todas las gráficas, en un único sitio (ESCALA_* al principio
+    de informe.py): pérdida 0,3-0,9 (con pos_weight 0,6-1,4 y título
+    "ponderada"), AUC por época 0,40-0,80, épocas 1-30, ROC/PR/calibración 0-1,
+    histograma X 0-1 e Y 0-40 pacientes por barra (40 lo eligió Claude: cubre
+    todas las ejecuciones menos cv_aumento_f2 y f4, modelos casi sin entrenar).
+    Lo que se sale se marca con ▲/▼ en el borde.
+  - regenerar_informes.py rehace los informes de ejecuciones ya terminadas: las
+    14 de la GPU completas (comprueba que las métricas anteriores salen
+    idénticas; Brier y probabilidad media cambian < 1e-9 por el redondeo de
+    predicciones_val.csv) y las 2 de CPU solo curvas_aprendizaje.png (sus
+    predicciones están en el portátil; si se ejecuta allí, se rehacen enteras).
+  - --bloques (4 o 5) y --realce en models/cnn_base.py (crear_modelo) y
+    train.py; config.json guarda bloques, filtros, realce y criterio_seleccion;
+    experimentos.csv tiene columnas nuevas criterio, bloques, realce y
+    average_precision_val (vacías en las filas anteriores). La inicialización y
+    los nombres de los pesos de la línea base no cambian (comprobado con hash).
+  - Pruebas --prueba --max-batches 5 de cada novedad sin errores, y
+    --criterio auc con --max-batches 20 --aumento idéntico (diferencia 0) a la
+    prueba hecha con el código anterior.
+- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no):
+  1. Tres variantes con validación cruzada, sin aumento, criterio auc_suavizado,
+     --epocas 30 --paciencia 10 (~30 s/época; entre ~2 h 45 min y ~3 h 50 min las
+     15 ejecuciones). Desde la raíz, en bash:
+     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for v in "5bloques:--bloques 5" "realce:--realce" "lr3e-4:--lr 3e-4"; do for f in 0 1 2 3 4; do $P train.py ${v#*:} --fold $f --nombre cv_${v%%:*}_f$f --epocas 30 --paciencia 10; done; done`
+  2. Pendiente de decidir por el usuario: la línea base con validación cruzada
+     se entrenó con el criterio auc y su reconstrucción con auc_suavizado no es
+     exacta (8 de 10), así que para comparar las tres variantes con la línea
+     base con el mismo criterio habría que relanzar la línea base (5 ejecuciones,
+     ~55 min; el entrenamiento es determinista, repetiría las mismas épocas y
+     añadiría las que faltan).
+  3. cv_resumen.py está escrito para línea base frente a aumento: para resumir
+     las variantes nuevas hay que adaptarlo (pedírselo a Claude).
 - 2026-10-22: en el laboratorio apareció un cambio no intencionado en .gitignore
   ("experimentos/" en lugar de "!experimentos/**/train.log"), que hacía que git
   ignorase las carpetas nuevas de experimentos/. Se deshizo con git restore. Si
@@ -304,17 +371,13 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
   - Qué hacer con la mala calibración (probabilidad media 0,44 frente a 0,29).
   - Umbral (ahora 0,5) y método de agregación por paciente (ahora media): con la
     validación interna, nunca con test.
-  - Cuándo y en qué orden lanzar los experimentos de arquitectura previstos
-    (estrecha 8->64, quinto bloque, realce explícito).
-  - Validación del modelo final: para comparar línea base y aumento se usa ya
-    validación cruzada de 5 folds (2026-10-22); falta decidir si se usa también
-    para el resto de experimentos y cómo se elige el modelo final.
+  - Cuándo lanzar la versión estrecha 8->64 (quinto bloque, realce y lr 3e-4
+    están en curso desde el 2026-10-22).
+  - Cómo se elige y se entrena el modelo final a partir de la validación
+    cruzada (por ejemplo, reentrenar con todo train o combinar los 5 folds).
   - Qué modelo se cierra como final y cuándo se hace la evaluación única en test.
   - App web: framework (Streamlit, Gradio...) y dónde desplegarla (debe ser
     accesible por URL; requisitos en GUIA.md C6).
-  - Detalles del aumento que eligió Claude y el usuario dejó "de momento así"
-    (2026-10-21): interpolación bilineal, relleno 0, ángulo uniforme y semilla del
-    aumento = semilla + 1. Revisables.
 - Entregables aún sin empezar (GUIA.md C7): informe, cinco diapositivas, app
   desplegada y pesos del modelo final.
 - Notas:
