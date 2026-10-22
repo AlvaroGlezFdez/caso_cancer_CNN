@@ -237,3 +237,4 @@ __pycache__/
 
 # Los logs de entrenamiento de experimentos/ sí se suben (el resto de *.log no)
 !experimentos/**/train.log
+
