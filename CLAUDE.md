@@ -181,37 +181,35 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
   - Pruebas --prueba --max-batches 2 --epocas 2 con --aumento y con
     --weight-decay 1e-4: sin errores. Con weight decay, la pérdida del primer lote
     es 0,6234292984008789, idéntica a la línea base (misma inicialización y barajado).
-- Siguiente paso (ordenador con GPU, a partir del 2026-10-21 por la tarde; el
-  usuario lanza los entrenamientos, Claude no):
-  1. Comprobaciones de puesta en marcha en la GPU (aún no hechas allí):
-     - git pull; el último commit debe ser d793f98 o posterior.
-     - torch.cuda.is_available() True y nombre de la GPU. Si no: PyTorch con CUDA
-       desde pytorch.org (2.14.1 si está disponible), no desde requirements.txt.
-     - Resto de dependencias (incluye psutil) SIN la línea de torch: comando en la
-       cabecera de requirements.txt. Después, comprobar que torch sigue con CUDA.
-     - Dataset: samples.csv 12.703 filas (10.945 train, 1.758 test), patients.csv
-       1.273, 38.109 PNG en breastdcedl/dataset, sha256 de utils_caso.py
-       1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377.
-       Si falta: python descargar_datos.py.
-     - Prueba corta en CUDA (la ruta por GPU nunca se ha ejecutado); en el log debe
-       salir "dispositivo cuda":
-       `.venv\Scripts\python.exe train.py --nombre prueba_gpu --prueba --max-batches 2 --epocas 2 --aumento --weight-decay 1e-4`
-  2. Tres entrenamientos de 30 épocas máx. y paciencia 7, cada uno con UNA
-     diferencia de configuración respecto a baseline_30ep_cpu. Desde la raíz:
-     `.venv\Scripts\python.exe train.py --nombre baseline_pw_30ep --pos-weight --epocas 30 --paciencia 7`
-     `.venv\Scripts\python.exe train.py --nombre aumento_30ep --aumento --epocas 30 --paciencia 7`
-     `.venv\Scripts\python.exe train.py --nombre wd_30ep --weight-decay 1e-4 --epocas 30 --paciencia 7`
-     Si en la primera época domina el tiempo de espera de datos, se puede subir
-     --num-workers (con valores >= 1 no debería cambiar los resultados).
-  3. Al terminar: commit y push de experimentos/ desde la GPU (pesos y predicciones
-     se quedan en outputs/ de la GPU) e informar de los resultados frente a
-     baseline_30ep_cpu: AUC con IC, "solo cohorte", por cohorte, sensibilidad y
-     especificidad, Brier y calibración, y la época de mínima pérdida de validación.
+- Hecho (laboratorio, Linux con GPU AMD RX 6700 XT, 2026-10-22, commit b47e6e7):
+  puesta en marcha.
+  - requirements.txt sin torch (torch se instala aparte según la máquina) e
+    instalado en el entorno de conda "cancer": torch sigue en 2.14.1+rocm7.14,
+    torch.cuda.is_available() True, pip check sin conflictos.
+  - Dataset descargado y completo: samples.csv 12.703 filas (10.945 train, 1.758
+    test), patients.csv 1.273, 38.109 PNG (ninguno falta ni vacío), sha256 de
+    utils_caso.py 1d6bf858... (coincide con el del portátil).
+  - Prueba `--prueba --max-batches 20 --aumento` (outputs/pruebas/
+    20261022_035040_prueba_gpu): "dispositivo cuda", sin errores; ~314 img/s en
+    entrenamiento con aumento y espera de datos 0 con --num-workers 2. La primera
+    época tarda ~10 s más (calentamiento de MIOpen). Estimación: ~40 s por época
+    completa (8.759 cortes de entrenamiento + 2.186 de validación), ~20 min por
+    ejecución de 30 épocas, ~1 h 20 min las cuatro (frente a ~10 min por época
+    en la CPU del portátil).
+- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no):
+  1. Cuatro entrenamientos de 30 épocas máx. y paciencia 7, cada uno con UNA
+     diferencia respecto a la línea base. El 2026-10-22 el usuario decidió lanzar
+     también la línea base en GPU (baseline_30ep_gpu, sin flags) para comparar
+     en el mismo dispositivo, porque en GPU los resultados no son idénticos a los
+     de CPU aunque la semilla sea la misma. Desde la raíz, en bash:
+     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for a in "--pos-weight --nombre baseline_pw_30ep_gpu" "--aumento --nombre aumento_30ep_gpu" "--weight-decay 1e-4 --nombre wd_30ep_gpu" "--nombre baseline_30ep_gpu"; do $P train.py $a --epocas 30 --paciencia 7; done`
+  2. Al terminar: commit y push de experimentos/ desde el laboratorio (pesos y
+     predicciones se quedan en outputs/ del laboratorio) e informar de los
+     resultados frente a baseline_30ep_gpu (y baseline_30ep_cpu como
+     referencia): AUC con IC, "solo cohorte", por cohorte, sensibilidad y
+     especificidad, Brier y calibración, y la época de mínima pérdida de
+     validación.
 - Decisiones pendientes (las toma el usuario; no decidir por él):
-  - Línea base en GPU (baseline_30ep_gpu, sin flags): las tres ejecuciones cambian
-    también de dispositivo (CPU -> GPU), y en CUDA el entrenamiento no es
-    determinista del todo. El 2026-10-21 el usuario decidió no lanzarla de momento;
-    replantearlo al ver los resultados.
   - Tras los resultados: si se usa pos_weight, qué regularización se adopta
     (aumento, weight decay, ambos o ninguno) y si hacen falta más pruebas (otros
     valores de weight decay, combinaciones).
@@ -233,7 +231,7 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
 - Notas:
   - train.py no lanza un experimento (no prueba) si hay archivos .py sin commit;
     --permitir-sin-commit lo salta y queda registrado en config.json.
-  - En la máquina con GPU hay que instalar psutil (está en requirements.txt).
+  - psutil ya está instalado en las dos máquinas (está en requirements.txt).
   - Pesos y predicciones de las ejecuciones del 2026-10-12, y la figura del aumento
     (outputs/pruebas/20261021_144701_aumento_fases.png; se regenera con
     `python aumento.py`), solo están en outputs/ del portátil (no van a git).
