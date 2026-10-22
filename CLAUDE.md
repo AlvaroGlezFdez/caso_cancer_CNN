@@ -246,13 +246,53 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
   base por fold y AUC "solo cohorte" por fold y su media. Comprueba que solo
   cambian el fold y el aumento. Solo se ha comprobado la sintaxis; aún no se ha
   ejecutado.
-- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no):
-  1. Diez entrenamientos (~29 s/época; entre ~1 h 25 min si paran hacia la
-     época 17 como hasta ahora y ~2 h 30 min si llegan todos a 30). Desde la raíz:
-     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for c in baseline aumento; do for f in 0 1 2 3 4; do x=""; [ $c = aumento ] && x=--aumento; $P train.py $x --fold $f --nombre cv_${c}_f$f --epocas 30 --paciencia 7; done; done`
-     cv_baseline_f0 repite exactamente la configuración de baseline_30ep_gpu:
-     compararlas indica cuánto cambia el resultado por el no determinismo de la GPU.
-  2. Al terminar: `$P cv_resumen.py`, commit y push de experimentos/ e informar.
+- Hecho (laboratorio, 2026-10-22, commit 7dd2e39): validación cruzada de 5 folds,
+  línea base y aumento (cv_baseline_f0-f4, cv_aumento_f0-f4; ~29 s/época, 1 h 40
+  min en total). OJO: se lanzaron con --paciencia 10, no 7 como estaba decidido
+  (queda en config.json y experimentos.csv). Como el entrenamiento es
+  determinista (ver abajo), el resultado con paciencia 7 se reconstruye exacto
+  desde metricas_epoca.csv: solo cambia cv_aumento_f1 (0,569 -> 0,540, mejor
+  época 4). experimentos/cv_resumen.md (cv_resumen.py; un fallo con los NaN de
+  pos_weight se corrigió antes de ejecutarlo):
+  | fold | línea base | aumento | dif. | solo cohorte |
+  | 0 | 0,598 | 0,577 | -0,021 | 0,534 |
+  | 1 | 0,626 | 0,569 | -0,057 | 0,526 |
+  | 2 | 0,608 | 0,600 | -0,008 | 0,538 |
+  | 3 | 0,540 | 0,549 | +0,009 | 0,593 |
+  | 4 | 0,611 | 0,614 | +0,004 | 0,554 |
+  | media (DT) | 0,597 (0,033) | 0,582 (0,026) | -0,015 (0,026) | 0,549 |
+  Bootstrap por paciente estratificado por fold (2.000 remuestreos; solo mide el
+  ruido de la validación, no el del entrenamiento; script fuera del repo):
+  - aumento - línea base: -0,015 (IC95 -0,054 a +0,025). Con paciencia 7: -0,021.
+    El aumento no mejora el AUC en ningún sentido demostrable.
+  - línea base - solo cohorte: +0,048 (IC95 +0,005 a +0,090); aumento - solo
+    cohorte: +0,033 (-0,008 a +0,075). Pero son AUC de la mejor época elegida con
+    la misma validación: la media del AUC por época (épocas 2 en adelante) es
+    0,539 en la línea base y 0,535 con aumento, por debajo de "solo cohorte"
+    (0,549). El margen sobre "solo cohorte" depende de escoger el pico.
+  - Curvas: en la línea base la pérdida de validación es mínima en la época 2-3
+    en los 5 folds y la de entrenamiento baja hasta 0,30-0,49 (memoriza). Con
+    aumento la de entrenamiento se queda en 0,51-0,59, pero el AUC no mejora; en
+    los folds 2 y 4 la mejor época es la 2 y la 1 (modelo casi sin entrenar).
+  - Fold 3: la línea base tiene AUC por época < 0,5 casi siempre (mejor 0,540)
+    y "solo cohorte" da 0,593: en ese fold la tasa de pCR de I-SPY2 es 0,40
+    (0,14 en I-SPY1). El modelo no separa cohortes (probabilidad media parecida
+    en las tres), así que no parece aprender la cohorte, pero tampoco la usa.
+  - AUC dentro de cohorte, con las 1.097 pacientes juntas (línea base / aumento):
+    I-SPY2 (784, 252 pCR) 0,61 / 0,56; I-SPY1 (104, 26) 0,51 / 0,59; Duke (209,
+    44) 0,53 / 0,52. La señal más clara está dentro de I-SPY2.
+  - Calibración: en la línea base la probabilidad media varía por fold entre
+    0,30 y 0,55 (real 0,27-0,34) y el Brier nunca es mejor que predecir la tasa
+    constante. Con aumento está más cerca (0,25-0,41) y en los folds 2 y 4 el
+    Brier queda algo por debajo del constante.
+  - Spearman entre las probabilidades por paciente de línea base y aumento:
+    0,17-0,77 según el fold (ordenan a las pacientes de forma bastante distinta).
+  - Determinismo: cv_baseline_f0 es idéntica a baseline_30ep_gpu (diferencia 0
+    en pérdidas y AUC de las 17 épocas comunes). En esta GPU AMD con ROCm el
+    entrenamiento es reproducible; para medir la variabilidad del entrenamiento
+    habría que cambiar la semilla.
+- Siguiente paso: lo decide el usuario a la vista de la validación cruzada.
+  Sin entrenamientos pendientes.
 - 2026-10-22: en el laboratorio apareció un cambio no intencionado en .gitignore
   ("experimentos/" en lugar de "!experimentos/**/train.log"), que hacía que git
   ignorase las carpetas nuevas de experimentos/. Se deshizo con git restore. Si
@@ -294,3 +334,5 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
     época 3 tardó ~526 s, así que no depende del número de época.
   - En CUDA el backward de AdaptiveAvgPool2d no es determinista: dos ejecuciones
     iguales en la GPU pueden diferir ligeramente aunque cudnn.deterministic=True.
+    En la GPU AMD del laboratorio (ROCm) no se ha observado: dos ejecuciones
+    iguales dieron resultados idénticos (2026-10-22).

@@ -47,7 +47,7 @@ def nombre_de(ejecucion: str) -> str:
 def seleccionar(experimentos: pd.DataFrame) -> pd.DataFrame:
     """Una fila por (configuración, fold); sale con error si falta alguna o no cuadra."""
     experimentos = experimentos.assign(nombre=experimentos.ejecucion.map(nombre_de))
-    filas, faltan = [], []
+    indices, configs, folds, faltan = [], [], [], []
     for config, prefijo in CONFIGURACIONES.items():
         for fold in FOLDS:
             nombre = f"{prefijo}_f{fold}"
@@ -64,11 +64,16 @@ def seleccionar(experimentos: pd.DataFrame) -> pd.DataFrame:
             con_aumento = pd.notna(fila.aumento_datos) and fila.aumento_datos != ""
             if con_aumento != (config == "aumento"):
                 sys.exit(f"{fila.ejecucion}: aumento_datos = {fila.aumento_datos!r} no cuadra con '{config}'")
-            filas.append(fila.to_frame().T.assign(configuracion=config, fold=fold))
+            indices.append(fila.name)
+            configs.append(config)
+            folds.append(fold)
     if faltan:
         sys.exit("Faltan ejecuciones en experimentos.csv: " + ", ".join(faltan))
 
-    elegidas = pd.concat(filas, ignore_index=True)
+    # Se seleccionan las filas de experimentos.csv (y no se apilan Series sueltas)
+    # para conservar los tipos: con columnas object, nunique(dropna=False) cuenta
+    # cada NaN como un valor distinto.
+    elegidas = experimentos.loc[indices].assign(configuracion=configs, fold=folds).reset_index(drop=True)
     distintas = [c for c in COLUMNAS_COMUNES if elegidas[c].nunique(dropna=False) > 1]
     if distintas:
         sys.exit("Las ejecuciones difieren en algo más que el fold y el aumento: " + ", ".join(distintas))
@@ -108,8 +113,9 @@ def escribir_md(tabla: pd.DataFrame, elegidas: pd.DataFrame, ruta: Path) -> None
         "|---|---|---|---|---|",
     ]
     for fold, fila in tabla.iterrows():
+        formato_dif = ".3f" if fold == "desv_tipica" else "+.3f"
         lineas.append(f"| {fold} | {fila.auc_linea_base:.3f} | {fila.auc_aumento:.3f} | "
-                      f"{fila.dif_aumento_menos_linea_base:+.3f} | {fila.auc_solo_cohorte:.3f} |")
+                      f"{fila.dif_aumento_menos_linea_base:{formato_dif}} | {fila.auc_solo_cohorte:.3f} |")
     lineas += [
         "",
         f"El aumento supera a la línea base en {int((dif > 0).sum())} de {len(dif)} folds.",

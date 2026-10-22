@@ -1,0 +1,88 @@
+{
+  "ejecucion": "20261022_044451_cv_baseline_f0",
+  "fecha_hora": "2026-10-22T04:44:51",
+  "modo": "experimento",
+  "comando": "python train.py --fold 0 --nombre cv_baseline_f0 --epocas 30 --paciencia 10",
+  "semilla": 42,
+  "fold_val": 0,
+  "pos_weight": null,
+  "n_parametros": 98049,
+  "hiperparametros": {
+    "modelo": "CNNBase",
+    "filtros": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "dropout": 0.3,
+    "inicializacion": "por defecto de PyTorch",
+    "optimizador": "AdamW",
+    "nota_optimizador": "AdamW con weight_decay 0 equivale a Adam (las ejecuciones anteriores a este cambio usaban torch.optim.Adam)",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.0,
+    "batch_size": 32,
+    "epocas_max": 30,
+    "paciencia": 10,
+    "criterio_parada": "AUC de validación por paciente (agregación mean)",
+    "perdida": "BCEWithLogitsLoss",
+    "usar_pos_weight": false,
+    "perdida_validacion": "el mismo criterio que en entrenamiento",
+    "aumento_datos": null,
+    "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+    "agregacion_paciente": "mean",
+    "umbral": 0.5,
+    "max_batches": null,
+    "overfit_batches": null
+  },
+  "datos": {
+    "pacientes_entrenamiento": 878,
+    "cortes_entrenamiento": 8759,
+    "pacientes_validacion": 219,
+    "cortes_validacion": 2186,
+    "validacion_recortada": false,
+    "tasa_pCR_entrenamiento_por_cohorte": {
+      "Duke": 0.1976,
+      "I-SPY1": 0.2651,
+      "I-SPY2": 0.3232
+    }
+  },
+  "entorno": {
+    "git_commit": "7dd2e39074de9ec56b22b13166422066a30fe851",
+    "git_codigo_sin_commit": false,
+    "python": "3.11.16",
+    "pytorch": "2.14.1+rocm7.14",
+    "cuda": null,
+    "dispositivo": "cuda",
+    "gpu": "AMD Radeon RX 6700 XT",
+    "cpu": "Intel(R) Core(TM) Ultra 5 245",
+    "nucleos_logicos": 14,
+    "hilos_torch": 14,
+    "num_workers": 2,
+    "so": "Linux-7.0.0-34-generic-x86_64-desconocido-with-glibc2.43",
+    "utils_caso_sha256": "1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377",
+    "permitir_sin_commit": false
+  },
+  "rutas": {
+    "experimento": "experimentos/20261022_044451_cv_baseline_f0",
+    "salidas": "outputs/runs/20261022_044451_cv_baseline_f0"
+  },
+  "resultado": {
+    "perdida_primer_lote": 0.628072202205658,
+    "epocas_ejecutadas": 20,
+    "mejor_epoca": 10,
+    "parada_temprana": true,
+    "tiempo_total_s": 570.2554556530004,
+    "tiempo_medio_epoca_s": 28.493158064999854,
+    "auc_val": 0.5983870967741935,
+    "auc_solo_cohorte": 0.534475806451613
+  },
+  "sha256": {
+    "best.pt": "8a865bf8d6cb713030884db83147a7107bb302a84b825f2a8ddac383af4ffa87",
+    "last.pt": "33fb4c59e8f83e2c7c721367f8e9be8ad58396c6739ce762ba46d4d3757be10a"
+  }
+}
