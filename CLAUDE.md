@@ -107,6 +107,58 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
 - pos_weight = N0/N1 varía entre 2,33 y 2,55 según el fold: calcularlo siempre
   con la función de utils_caso.py sobre la partición de entrenamiento.
 
+## Hallazgos de la auditoría visual (portátil, 2026-10-22 y 2026-10-23)
+Hecha fuera del repositorio, en ../exploracion/ (01_cortes a 04_posicion_tumor,
+cada una con su observaciones.md). Solo existe en el portátil y no va a git (sus
+CSV llevan etiquetas). Solo pacientes de train. Las anotaciones son visuales, de
+un único anotador (Claude) y sobre el corte central.
+- El PNG es una ventana de 256 px del corte original, sin reescalar y centrada en
+  la caja del tumor (desplazada lo justo para no salirse de la imagen). Un píxel
+  del PNG mide xy_spacing. Coincide con el PDF: "La versión MinCrop recorta el
+  entorno tumoral a 256 × 256".
+  - Con n_xy = 256 (912 de las 1.097 pacientes de train) la ventana es la imagen
+    entera. En I-SPY el tumor puede estar en cualquier sitio (distancia mediana
+    al centro 31-36 px, hasta 113). En Duke suele estar centrado (el 36 % a menos
+    de 2 px del centro), lo que apunta a que Duke ya viene recortado; no está
+    documentado.
+  - Con n_xy = 128 (2 pacientes) el corte está ampliado x2 por vecino más
+    próximo, y el píxel mide xy_spacing / 2.
+- La caja del tumor de patients.csv es fiable: sraw:eraw son las filas y
+  scol:ecol las columnas, en píxeles del corte original. caja_tumor.caja_en_png la
+  lleva al PNG en dos pasos:
+  1. aplica la ventana anterior;
+  2. gira 90° (fila del PNG = 256 - columna original, columna del PNG = fila
+     original).
+
+  Comprobación de que cae bien:
+  - Cayó sobre la lesión en las 40 de 60 pacientes con una lesión visible: 0
+    errores. Las otras 20 no tenían una lesión clara con la que comparar.
+  - Cayó también sobre la lesión en 8 pacientes más con n_xy 128, 312 y 448.
+  - Hay una sola caja por paciente, la misma en todos sus cortes.
+
+  Caja entera dentro de un recorte central:
+  - 128 px: 39 % de las pacientes (I-SPY1 37 %, I-SPY2 27 %, Duke 83 %);
+  - 160 px: 61 %;
+  - 192 px: 83 %.
+- Corazón/tórax: una estructura grande y muy realzada detrás de la pared torácica
+  aparece en 13 de 20 imágenes de I-SPY2, en 13 de 20 de Duke y en ninguna de
+  I-SPY1. En I-SPY1 hubo 9 dudosas: una estructura de realce moderado cortada por
+  el borde. Es una pista ligada a la cohorte.
+- Movimiento entre fases: hay bordes dobles rojo/azul en el realce EARLY-PRE
+  (posible movimiento entre PRE y EARLY) en 13 de 60 imágenes de forma clara y en
+  14 dudosas, repartidas por las tres cohortes.
+- Relación con la pCR (AUC como predictor único, en train, IC95 por bootstrap):
+  - El tamaño del encuadre en mm (xy_spacing) no se relaciona: 0,50 (0,46-0,54).
+  - El tamaño de la caja sí: 0,44 (0,41-0,48) en columnas y 0,47 (0,43-0,50) en
+    filas. Dentro de I-SPY2 baja a 0,41; en I-SPY1 y Duke el intervalo incluye
+    0,5. Es decir: tumores grandes, menos pCR.
+- mask_start/mask_end no comparten el eje z de slice_index en I-SPY:
+  - En Duke el corte central siempre cae entre ellos.
+  - En I-SPY solo cae en el 52 % (I-SPY1) y el 29 % (I-SPY2), aunque la lesión se
+    vea.
+- En la defensa el profesor dará todas las variables de patients.csv, incluida la
+  caja del tumor (lo dijo el usuario el 2026-10-23).
+
 ## Decisiones tomadas
 - Línea base (98.049 parámetros entrenables):
   4 bloques Conv2d 3x3 (padding=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2),
@@ -347,18 +399,35 @@ después se instala requirements.txt (versiones exactas del .venv del portátil)
   - Pruebas --prueba --max-batches 5 de cada novedad sin errores, y
     --criterio auc con --max-batches 20 --aumento idéntico (diferencia 0) a la
     prueba hecha con el código anterior.
-- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no):
-  1. Tres variantes con validación cruzada, sin aumento, criterio auc_suavizado,
-     --epocas 30 --paciencia 10 (~30 s/época; entre ~2 h 45 min y ~3 h 50 min las
-     15 ejecuciones). Desde la raíz, en bash:
-     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for v in "5bloques:--bloques 5" "realce:--realce" "lr3e-4:--lr 3e-4"; do for f in 0 1 2 3 4; do $P train.py ${v#*:} --fold $f --nombre cv_${v%%:*}_f$f --epocas 30 --paciencia 10; done; done`
-  2. Pendiente de decidir por el usuario: la línea base con validación cruzada
-     se entrenó con el criterio auc y su reconstrucción con auc_suavizado no es
-     exacta (8 de 10), así que para comparar las tres variantes con la línea
-     base con el mismo criterio habría que relanzar la línea base (5 ejecuciones,
-     ~55 min; el entrenamiento es determinista, repetiría las mismas épocas y
-     añadiría las que faltan).
-  3. cv_resumen.py está escrito para línea base frente a aumento: para resumir
+- Hecho (laboratorio, 2026-10-22, commit 52163ff): cv_5bloques_f0-f4 con criterio
+  auc_suavizado (sin aumento, --epocas 30 --paciencia 10).
+- Hecho (portátil sin GPU, 2026-10-23): auditoría visual en ../exploracion/ (ver
+  "Hallazgos de la auditoría visual") y caja_tumor.py.
+  - caja_en_png(paciente) sitúa la caja de patients.csv en el PNG.
+  - `python caja_tumor.py` la compara con la auditoría en 12 pacientes de train
+    (las tres cohortes y todos los n_xy): las 12 OK, con diferencia 0.
+  - También guarda una figura en outputs/pruebas/. Revisada: la caja cae sobre la
+    lesión en las 12.
+  - Todavía no se usa en train.py ni en ninguna otra parte.
+- Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no).
+  Estado a 2026-10-23, según el usuario:
+  1. Hecho con criterio auc_suavizado: cv_5bloques (5 folds) y cv_realce_f0.
+     OJO: en el repositorio solo hay una copia parcial de cv_realce_f0
+     (experimentos/20261022_073855_cv_realce_f0). Su train.log llega a la época
+     10 y no tiene informe ni fila en experimentos.csv, porque se subió con la
+     ejecución en marcha. Hay que subir desde el laboratorio la carpeta completa
+     y la fila de experimentos.csv.
+  2. Faltan dos tandas, sin aumento, criterio auc_suavizado (el de por defecto),
+     --epocas 30 --paciencia 10; ~10 min por ejecución, ~1 h 30 min las 9:
+     - cv_baseline_suav, 5 folds: la línea base relanzada con auc_suavizado,
+       para compararla con las variantes con el mismo criterio;
+     - cv_realce, folds 1-4.
+
+     Desde la raíz, en bash:
+     `P=/home/aulas/miniconda3/envs/cancer/bin/python; for f in 0 1 2 3 4; do $P train.py --fold $f --nombre cv_baseline_suav_f$f --epocas 30 --paciencia 10; done; for f in 1 2 3 4; do $P train.py --realce --fold $f --nombre cv_realce_f$f --epocas 30 --paciencia 10; done`
+  3. cv_lr3e-4: el usuario no lo mencionó el 2026-10-23; confirmar si sigue
+     previsto.
+  4. cv_resumen.py está escrito para línea base frente a aumento: para resumir
      las variantes nuevas hay que adaptarlo (pedírselo a Claude).
 - 2026-10-22: en el laboratorio apareció un cambio no intencionado en .gitignore
   ("experimentos/" en lugar de "!experimentos/**/train.log"), que hacía que git
