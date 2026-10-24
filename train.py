@@ -8,6 +8,7 @@ Uso, desde la raíz del repositorio:
     python train.py --nombre wd --weight-decay 1e-4
     python train.py --nombre cinco_bloques --bloques 5
     python train.py --nombre realce --realce
+    python train.py --nombre recortecaja --recorte-caja
     python train.py --nombre criterio_antiguo --criterio auc
     python train.py --nombre prueba_max5 --max-batches 5 --epocas 2      # prueba
     python train.py --nombre prueba_overfit --overfit-batches 2 --epocas 50
@@ -23,6 +24,8 @@ pos_weight y sin realce.
 la misma transformación en las tres fases) solo a los lotes de entrenamiento.
 --bloques 5 añade un quinto bloque de 128 a 128 filtros antes del GAP y
 --realce hace que el modelo use PRE, EARLY-PRE y LATE-EARLY (models/cnn_base.py).
+--recorte-caja recorta cada corte alrededor de la caja del tumor de la paciente
+(caja_tumor.caja_en_png, preprocesado.recortar) y la red recibe 128x128.
 --criterio auc reproduce la selección anterior al 2026-10-22 (AUC de cada época).
 
 Una ejecución normal escribe:
@@ -77,7 +80,8 @@ import aumento  # noqa: E402
 import informe  # noqa: E402
 import seleccion  # noqa: E402
 from models.cnn_base import FILTROS_POR_BLOQUES, PARAMETROS_ESPERADOS, contar_parametros, crear_modelo  # noqa: E402
-from preprocesado import preprocesar  # noqa: E402
+from caja_tumor import caja_en_png  # noqa: E402
+from preprocesado import cuadrado_recorte, LADO_MINIMO, LADO_RECORTE, MARGEN_RECORTE, preprocesar  # noqa: E402
 
 DIR_EXPERIMENTOS = RAIZ_REPO / "experimentos"
 DIR_RUNS = RAIZ_REPO / "outputs" / "runs"
@@ -92,12 +96,18 @@ log = logging.getLogger("train")
 
 class DatasetCortes(uc.BreastDCEDataset):
     """BreastDCEDataset de utils_caso, pero cargando cada corte con
-    preprocesado.preprocesar, la misma función que usará la app."""
+    preprocesado.preprocesar, la misma función que usará la app. Con `cajas`
+    (patient_id -> caja en el PNG) recorta cada corte por la caja de su paciente."""
+
+    def __init__(self, filas, raiz, transform=None, cajas=None):
+        super().__init__(filas, raiz, transform)
+        self.cajas = cajas
 
     def __getitem__(self, i: int):
         fila = self.filas.iloc[i]
+        caja = None if self.cajas is None else self.cajas[fila.patient_id]
         x = torch.from_numpy(preprocesar(self.raiz / fila.path_pre, self.raiz / fila.path_early,
-                                         self.raiz / fila.path_late))
+                                         self.raiz / fila.path_late, caja=caja))
         if self.transform is not None:
             x = self.transform(x)
         return x, torch.tensor(float(fila.pCR), dtype=torch.float32)
@@ -124,6 +134,9 @@ def argumentos() -> argparse.Namespace:
                     help="bloques convolucionales; con 5 se añade uno de 128 a 128 filtros antes del GAP")
     ap.add_argument("--realce", action="store_true",
                     help="el modelo transforma su entrada en PRE, EARLY-PRE y LATE-EARLY antes del primer bloque")
+    ap.add_argument("--recorte-caja", action="store_true",
+                    help="recorta un cuadrado centrado en la caja del tumor (lado mayor + 25 %%, mínimo 64 px) "
+                         "y lo reescala a 128x128, igual en las tres fases (preprocesado.recortar)")
     ap.add_argument("--semilla", type=int, default=42)
     ap.add_argument("--pos-weight", action="store_true",
                     help="BCEWithLogitsLoss con pos_weight = N0/N1 de la partición de entrenamiento")
@@ -386,7 +399,8 @@ def main():
 
     # Datos: solo la partición de train. El conjunto test no se carga.
     samples = uc.cargar_samples(RAIZ_DATOS)
-    cohorte = uc.cargar_patients(RAIZ_DATOS).set_index("pid").dataset.map(DATASET_A_COHORTE)
+    patients = uc.cargar_patients(RAIZ_DATOS).set_index("pid")
+    cohorte = patients.dataset.map(DATASET_A_COHORTE)
     samples["cohorte"] = samples.patient_id.map(cohorte)
     if samples.cohorte.isna().any():
         raise RuntimeError("Hay pacientes sin cohorte conocida en patients.csv")
@@ -402,11 +416,19 @@ def main():
              + (f" (recortada a {val_eval.patient_id.nunique()} pacientes / {len(val_eval)} cortes)"
                 if recorte else ""))
     log.info("Preprocesado: preprocesado.preprocesar, idéntico a utils_caso.cargar_imagen (comprobado)")
+    cajas = None
+    if args.recorte_caja:
+        # La caja es un dato de la paciente (patients.csv), como en la app.
+        cajas = {pid: caja_en_png(patients.loc[pid]) for pid in samples.patient_id.unique()}
+        lados = np.array([cuadrado_recorte(cajas[p])[2] for p in entrenamiento.patient_id.unique()])
+        log.info(f"Recorte por la caja del tumor a {LADO_RECORTE}x{LADO_RECORTE}: lado del cuadrado en "
+                 f"entrenamiento mediana {np.median(lados):.0f} px (mín. {lados.min():.0f}, máx. {lados.max():.0f}; "
+                 f"{np.mean(lados == LADO_MINIMO):.0%} con el mínimo de {LADO_MINIMO})")
 
     workers = 0 if args.overfit_batches else args.num_workers
 
     def cargador(filas, barajar, generador=None):
-        return DataLoader(DatasetCortes(filas, RAIZ_DATOS), batch_size=args.batch_size, shuffle=barajar,
+        return DataLoader(DatasetCortes(filas, RAIZ_DATOS, cajas=cajas), batch_size=args.batch_size, shuffle=barajar,
                           generator=generador, num_workers=workers, persistent_workers=workers > 0,
                           pin_memory=cuda)
 
@@ -427,6 +449,8 @@ def main():
         raise RuntimeError(f"{n_parametros} parámetros; se esperaban {PARAMETROS_ESPERADOS[args.bloques]}")
     arquitectura = {"arquitectura": "CNNBase", "bloques": args.bloques, "realce": args.realce,
                     "n_parametros": n_parametros}
+    if args.recorte_caja:                       # solo si se usa: los pesos anteriores no cambian
+        arquitectura["recorte_caja"] = True
     pos_weight = uc.pos_weight(entrenamiento) if args.pos_weight else None
     criterio = nn.BCEWithLogitsLoss(
         pos_weight=torch.tensor(pos_weight, device=dispositivo) if pos_weight is not None else None)
@@ -444,6 +468,7 @@ def main():
              f"pos_weight {f'{pos_weight:.4f}' if pos_weight is not None else 'no'}; "
              f"AdamW weight decay {args.weight_decay:g}; "
              f"aumento {aumento.etiqueta() + ' (solo entrenamiento)' if args.aumento else 'no'}; "
+             f"recorte por la caja {'sí' if args.recorte_caja else 'no'}; "
              f"{n_lotes} lotes de {args.batch_size} por época")
 
     config = {
@@ -482,6 +507,11 @@ def main():
             "aumento_datos": ({**aumento.descripcion(), "semilla_generador": semilla_aumento}
                               if args.aumento else None),
             "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+            "recorte_caja": ({"caja": "caja_tumor.caja_en_png (patients.csv)", "margen": MARGEN_RECORTE,
+                              "lado_minimo_px": LADO_MINIMO, "tamano_salida": [LADO_RECORTE, LADO_RECORTE],
+                              "interpolacion": "bilineal de PIL (antialiasing al reducir)",
+                              "fuera_de_imagen": "ceros"}
+                             if args.recorte_caja else None),
             "agregacion_paciente": METODO,
             "umbral": UMBRAL,
             "max_batches": args.max_batches,
@@ -650,6 +680,8 @@ def main():
             # (equivalen a criterio auc, 4 bloques, sin realce).
             "criterio": args.criterio, "bloques": args.bloques, "realce": args.realce,
             "average_precision_val": final["average_precision"],
+            # Añadida el 2026-10-24 (vacía antes: sin recorte).
+            "recorte_caja": args.recorte_caja,
         })
         log.info("Fila añadida a experimentos/experimentos.csv")
     log.info(f"Hecho en {tiempo_total / 60:.1f} min. Resultados en {relativa(dir_exp)}"

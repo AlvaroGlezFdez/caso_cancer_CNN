@@ -408,7 +408,33 @@ un único anotador (Claude) y sobre el corte central.
     (las tres cohortes y todos los n_xy): las 12 OK, con diferencia 0.
   - También guarda una figura en outputs/pruebas/. Revisada: la caja cae sobre la
     lesión en las 12.
-  - Todavía no se usa en train.py ni en ninguna otra parte.
+  - Desde el 2026-10-24 la usa train.py --recorte-caja (ver abajo).
+- Hecho (laboratorio, 2026-10-24): recorte por la caja del tumor (train.py
+  --recorte-caja).
+  - preprocesado.preprocesar(pre, early, late, caja=None): con la caja de
+    caja_tumor.caja_en_png recorta un cuadrado centrado en ella, de lado el mayor
+    de la caja x 1,25 (mínimo 64 px), y lo reescala a 128x128 con bilineal de PIL
+    (antialiasing al reducir; la interpolación la eligió Claude), la misma en las
+    3 fases, con ceros fuera del PNG. train.py calcula la caja de cada paciente
+    desde patients.csv (como la recibirá la app). config.json guarda
+    hiperparametros.recorte_caja, best.pt/last.pt llevan recorte_caja: True y
+    experimentos.csv tiene una columna recorte_caja (vacía en filas anteriores).
+  - Lado del cuadrado en entrenamiento (fold 0): mediana 96 px, de 64 a 340; el
+    22 % de las pacientes con el mínimo de 64 (se amplían x2).
+  - `python caja_tumor.py` guarda además ..._caja_tumor_recorte.png en
+    outputs/pruebas/ (12 pacientes, 3 cohortes: PNG con caja y cuadrado, y
+    recorte PRE, EARLY y realce). Revisada: el tumor queda dentro en las 12; en
+    ISPY1_1069 el realce se extiende algo más allá de la caja.
+  - Sin la opción, idéntico: pruebas --prueba --max-batches 5 de la línea base y
+    de --realce con diferencia 0 en métricas, pesos y predicciones frente a las
+    del 2026-10-22. --recorte-caja --prueba --max-batches 5 sin errores.
+  - cv_realce_f0 está incompleta también en el laboratorio (train.log corta en la
+    época 10, sin informe ni fila en experimentos.csv; carpetas
+    experimentos/ y outputs/runs/20261022_073855_cv_realce_f0). Se repite el
+    fold 0. La carpeta antigua sigue ahí: el usuario decide si se borra
+    (cv_resumen.py usa la ejecución más reciente si un nombre se repite).
+  - Pendiente de lanzar (usuario), ~2 h: cv_baseline_suav_f0-f4,
+    cv_recortecaja_f0-f4 y cv_realce_f0-f4, salida en outputs/cv_hoy.log.
 - Siguiente paso (laboratorio; el usuario lanza los entrenamientos, Claude no).
   Estado a 2026-10-23, según el usuario:
   1. Hecho con criterio auc_suavizado: cv_5bloques (5 folds) y cv_realce_f0.

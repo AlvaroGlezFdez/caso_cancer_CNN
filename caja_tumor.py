@@ -26,7 +26,9 @@ Comprobación, desde la raíz del repositorio:
 
 Compara la caja con la obtenida en la auditoría en 12 pacientes de
 entrenamiento (las tres cohortes y todos los n_xy) y guarda en outputs/pruebas/
-una figura con la caja sobre el realce EARLY-PRE del corte central de cada una.
+una figura con la caja sobre el realce EARLY-PRE del corte central de cada una,
+y otra con el recorte de preprocesado.recortar (train.py --recorte-caja): el
+cuadrado sobre el PNG completo y el recorte de 128x128 (PRE, EARLY y realce).
 """
 
 from __future__ import annotations
@@ -99,6 +101,50 @@ def figura(cortes: list, ruta) -> None:
     plt.close(fig)
 
 
+def figura_recorte(cortes: list, ruta) -> None:
+    """Para cada corte: PNG completo (EARLY) con la caja y el cuadrado de recorte,
+    y el recorte de 128x128 en PRE, EARLY y EARLY-PRE con la caja encima."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
+    from preprocesado import LADO_RECORTE, cuadrado_recorte, recortar
+
+    fig, ejes = plt.subplots(6, 8, figsize=(20, 16), layout="constrained")
+    for i, (pid, n_xy, z, imagen, caja) in enumerate(cortes):
+        fila_ejes = ejes[i // 2, 4 * (i % 2): 4 * (i % 2) + 4]
+        f0, f1, c0, c1 = caja
+        fc, cc, lado = cuadrado_recorte(caja)
+        rec = recortar(imagen, caja)
+        e = fila_ejes[0]
+        e.imshow(imagen[1], cmap="gray", vmin=0, vmax=1)
+        e.add_patch(Rectangle((c0, f0), c1 - c0, f1 - f0, fill=False, ec="lime", lw=1.5))
+        e.add_patch(Rectangle((cc - lado / 2, fc - lado / 2), lado, lado, fill=False, ec="orange", lw=1.5))
+        e.set_xlim(-0.5, 255.5)
+        e.set_ylim(255.5, -0.5)
+        e.set_title(f"{pid}\nn_xy {n_xy}, z {z}, lado {lado:.0f}", fontsize=8)
+        # Caja en coordenadas del recorte
+        k = LADO_RECORTE / lado
+        caja_rec = ((c0 - cc + lado / 2) * k, (f0 - fc + lado / 2) * k, (c1 - c0) * k, (f1 - f0) * k)
+        for e, img, titulo, kw in zip(fila_ejes[1:], (rec[0], rec[1], rec[1] - rec[0]),
+                                      ("PRE", "EARLY", "EARLY − PRE"),
+                                      ({"cmap": "gray", "vmin": 0, "vmax": 1},) * 2
+                                      + ({"cmap": "RdBu_r", "vmin": -0.5, "vmax": 0.5},)):
+            e.imshow(img, **kw)
+            e.add_patch(Rectangle(caja_rec[:2], *caja_rec[2:], fill=False, ec="lime", lw=1, ls="--"))
+            e.set_title(f"recorte {titulo}", fontsize=8)
+    for e in ejes.ravel():
+        e.set_xticks([])
+        e.set_yticks([])
+    fig.suptitle("Recorte por la caja del tumor (preprocesado.recortar, train.py --recorte-caja)\n"
+                 "verde: caja del tumor; naranja: cuadrado recortado (lado mayor + 25 %, mín. 64 px) "
+                 "-> 128x128; fuera del PNG, ceros", fontsize=12)
+    fig.savefig(ruta, dpi=80)
+    plt.close(fig)
+
+
 def main():
     import sys
     from datetime import datetime
@@ -135,8 +181,10 @@ def main():
     ruta = raiz / "outputs" / "pruebas" / f"{datetime.now():%Y%m%d_%H%M%S}_caja_tumor.png"
     ruta.parent.mkdir(parents=True, exist_ok=True)
     figura(cortes, ruta)
+    ruta_recorte = ruta.with_name(ruta.stem + "_recorte.png")
+    figura_recorte(cortes, ruta_recorte)
     print(f"Las {len(REFERENCIA)} cajas coinciden con la auditoría. "
-          f"Figura: {ruta.relative_to(raiz).as_posix()}")
+          f"Figuras: {ruta.relative_to(raiz).as_posix()} y {ruta_recorte.relative_to(raiz).as_posix()}")
 
 
 if __name__ == "__main__":
