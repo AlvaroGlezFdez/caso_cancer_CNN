@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+  <!-- Tres fases (PRE, EARLY, LATE) como tres cortes superpuestos; el punto, la lesión que se realza -->
+  <rect x="1.5" y="11.5" width="19" height="19" rx="2.5" fill="#0F2136" stroke="#2C4A6B"/>
+  <rect x="7.5" y="6.5" width="19" height="19" rx="2.5" fill="#123A3A" stroke="#1F8A7F"/>
+  <rect x="13.5" y="1.5" width="19" height="19" rx="2.5" fill="#0C1B2E" stroke="#38C6B6" stroke-width="1.4"/>
+  <circle cx="24.5" cy="10" r="3.6" fill="#38C6B6"/>
+</svg>

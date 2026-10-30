@@ -1,0 +1,105 @@
+{
+  "ejecucion": "20261024_071549_cv_recortecaja_f2",
+  "fecha_hora": "2026-10-24T07:15:49",
+  "modo": "experimento",
+  "comando": "python train.py --recorte-caja --fold 2 --nombre cv_recortecaja_f2 --epocas 30 --paciencia 10",
+  "semilla": 42,
+  "fold_val": 2,
+  "pos_weight": null,
+  "n_parametros": 98049,
+  "hiperparametros": {
+    "modelo": "CNNBase",
+    "bloques": 4,
+    "filtros": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "realce": false,
+    "entrada_primer_bloque": "PRE, EARLY, LATE",
+    "dropout": 0.3,
+    "inicializacion": "por defecto de PyTorch",
+    "optimizador": "AdamW",
+    "nota_optimizador": "AdamW con weight_decay 0 equivale a Adam (las ejecuciones anteriores a este cambio usaban torch.optim.Adam)",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.0,
+    "batch_size": 32,
+    "epocas_max": 30,
+    "paciencia": 10,
+    "criterio_seleccion": "auc_suavizado",
+    "criterio_parada": "media móvil del AUC de validación por paciente con la época anterior y la siguiente (en los extremos, las disponibles) (agregación mean); decide best.pt y el early stopping",
+    "perdida": "BCEWithLogitsLoss",
+    "usar_pos_weight": false,
+    "perdida_validacion": "el mismo criterio que en entrenamiento",
+    "aumento_datos": null,
+    "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+    "recorte_caja": {
+      "caja": "caja_tumor.caja_en_png (patients.csv)",
+      "margen": 1.25,
+      "lado_minimo_px": 64,
+      "tamano_salida": [
+        128,
+        128
+      ],
+      "interpolacion": "bilineal de PIL (antialiasing al reducir)",
+      "fuera_de_imagen": "ceros"
+    },
+    "agregacion_paciente": "mean",
+    "umbral": 0.5,
+    "max_batches": null,
+    "overfit_batches": null
+  },
+  "datos": {
+    "pacientes_entrenamiento": 877,
+    "cortes_entrenamiento": 8753,
+    "pacientes_validacion": 220,
+    "cortes_validacion": 2192,
+    "validacion_recortada": false,
+    "tasa_pCR_entrenamiento_por_cohorte": {
+      "Duke": 0.2202,
+      "I-SPY1": 0.2289,
+      "I-SPY2": 0.3307
+    }
+  },
+  "entorno": {
+    "git_commit": "bf18a5d983e19ca854b2301134afd01b9f501449",
+    "git_codigo_sin_commit": false,
+    "python": "3.11.16",
+    "pytorch": "2.14.1+rocm7.14",
+    "cuda": null,
+    "dispositivo": "cuda",
+    "gpu": "AMD Radeon RX 6700 XT",
+    "cpu": "Intel(R) Core(TM) Ultra 5 245",
+    "nucleos_logicos": 14,
+    "hilos_torch": 14,
+    "num_workers": 2,
+    "so": "Linux-7.0.0-34-generic-x86_64-desconocido-with-glibc2.43",
+    "utils_caso_sha256": "1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377",
+    "permitir_sin_commit": false
+  },
+  "rutas": {
+    "experimento": "experimentos/20261024_071549_cv_recortecaja_f2",
+    "salidas": "outputs/runs/20261024_071549_cv_recortecaja_f2"
+  },
+  "resultado": {
+    "perdida_primer_lote": 0.6015111207962036,
+    "epocas_ejecutadas": 12,
+    "mejor_epoca": 1,
+    "valor_criterio_mejor_epoca": 0.5353721444362565,
+    "parada_temprana": true,
+    "tiempo_total_s": 147.61400758998934,
+    "tiempo_medio_epoca_s": 12.27557103974444,
+    "auc_val": 0.5240551637014422,
+    "average_precision_val": 0.3133476507853304,
+    "auc_solo_cohorte": 0.5377934519423098
+  },
+  "sha256": {
+    "best.pt": "c82555b2682d5d7e2e31c16f9196066b9c9585d6ba3d711b0c11a06f5690f84a",
+    "last.pt": "1db0be6d937e2fa3c0c678923f6bd1ef8be2590ec11f94db78ff0427dc30783f"
+  }
+}

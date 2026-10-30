@@ -1,0 +1,15 @@
+# Dependencias de la APP (no del entrenamiento: esas están en requirements.txt de la raíz).
+#
+# Streamlit Community Cloud usa este fichero porque está junto a app/streamlit_app.py.
+# Al desplegar hay que elegir Python 3.11 (Advanced settings): torch se instala desde
+# la wheel CPU de PyTorch para Linux x86_64 y Python 3.11 (196 MB), en lugar de la de
+# PyPI, que trae CUDA y ocupa varios GB. Versiones exactas del .venv del portátil.
+#
+# En local no hace falta: el .venv del proyecto ya tiene todo esto (torch CPU incluido).
+
+torch @ https://download.pytorch.org/whl/cpu/torch-2.14.1%2Bcpu-cp311-cp311-manylinux_2_28_x86_64.whl
+streamlit==1.66.1
+plotly==7.1.0
+numpy==2.4.6
+pandas==3.0.6
+pillow==12.3.0

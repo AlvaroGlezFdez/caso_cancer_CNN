@@ -1,0 +1,298 @@
+{
+  "nota": "Solo agregados de train y los totales de test de statistics.json. Ningún id ni etiqueta individual.",
+  "train": {
+    "pacientes": 1097,
+    "cortes": 10945,
+    "pCR_1": 322,
+    "pCR_0": 775
+  },
+  "test": {
+    "pacientes": 176,
+    "cortes": 1758,
+    "pCR_1": 53,
+    "pCR_0": 123
+  },
+  "por_cohorte": {
+    "I-SPY1": {
+      "pacientes_train": 104,
+      "cortes_train": 1040,
+      "pCR_1": 26,
+      "tasa_pCR": 0.25,
+      "pacientes_test": 35,
+      "n_xy": {
+        "256": 92,
+        "512": 12
+      },
+      "xy_spacing_mm": {
+        "mediana": 0.78125,
+        "p5": 0.390625,
+        "p95": 0.9375,
+        "min": 0.390625,
+        "max": 1.05469
+      },
+      "pixel_png_mm": {
+        "mediana": 0.78125,
+        "p5": 0.390625,
+        "p95": 0.9375,
+        "min": 0.390625,
+        "max": 1.05469
+      },
+      "grosor_corte_mm": {
+        "mediana": 2.3,
+        "p5": 2.0,
+        "p95": 4.0,
+        "min": 1.5,
+        "max": 4.0
+      },
+      "campo_png_mm": {
+        "mediana": 200.0,
+        "p5": 100.0,
+        "p95": 240.0,
+        "min": 100.0,
+        "max": 270.00064
+      }
+    },
+    "I-SPY2": {
+      "pacientes_train": 784,
+      "cortes_train": 7835,
+      "pCR_1": 252,
+      "tasa_pCR": 0.32142857142857145,
+      "pacientes_test": 99,
+      "n_xy": {
+        "128": 2,
+        "256": 612,
+        "312": 16,
+        "320": 42,
+        "384": 111,
+        "448": 1
+      },
+      "xy_spacing_mm": {
+        "mediana": 0.6836,
+        "p5": 0.56539476943,
+        "p95": 0.9632411817666693,
+        "min": 0.3125,
+        "max": 1.40625
+      },
+      "pixel_png_mm": {
+        "mediana": 0.6836,
+        "p5": 0.56539476943,
+        "p95": 0.9375,
+        "min": 0.3125,
+        "max": 1.40625
+      },
+      "grosor_corte_mm": {
+        "mediana": 2.0,
+        "p5": 1.0,
+        "p95": 2.5,
+        "min": 0.799997,
+        "max": 3.0
+      },
+      "campo_png_mm": {
+        "mediana": 175.0016,
+        "p5": 144.74106097408,
+        "p95": 240.0,
+        "min": 80.0,
+        "max": 360.0
+      }
+    },
+    "Duke": {
+      "pacientes_train": 209,
+      "cortes_train": 2070,
+      "pCR_1": 44,
+      "tasa_pCR": 0.21052631578947367,
+      "pacientes_test": 42,
+      "n_xy": {
+        "256": 208,
+        "448": 1
+      },
+      "xy_spacing_mm": {
+        "mediana": 0.7031,
+        "p5": 0.5859,
+        "p95": 0.89285713434219,
+        "min": 0.5273,
+        "max": 1.25
+      },
+      "pixel_png_mm": {
+        "mediana": 0.7031,
+        "p5": 0.5859,
+        "p95": 0.89285713434219,
+        "min": 0.5273,
+        "max": 1.25
+      },
+      "grosor_corte_mm": {
+        "mediana": 2.0,
+        "p5": 1.1,
+        "p95": 2.0,
+        "min": 1.1,
+        "max": 2.5
+      },
+      "campo_png_mm": {
+        "mediana": 179.9936,
+        "p5": 149.9904,
+        "p95": 228.57142639160065,
+        "min": 134.9888,
+        "max": 320.0
+      }
+    }
+  },
+  "cortes_por_paciente": {
+    "5": 2,
+    "6": 3,
+    "7": 1,
+    "10": 1091
+  },
+  "folds": {
+    "0": {
+      "pacientes": 219,
+      "pCR_1": 64,
+      "tasa_pCR": 0.2922374429223744
+    },
+    "1": {
+      "pacientes": 219,
+      "pCR_1": 62,
+      "tasa_pCR": 0.2831050228310502
+    },
+    "2": {
+      "pacientes": 220,
+      "pCR_1": 59,
+      "tasa_pCR": 0.2681818181818182
+    },
+    "3": {
+      "pacientes": 220,
+      "pCR_1": 75,
+      "tasa_pCR": 0.3409090909090909
+    },
+    "4": {
+      "pacientes": 219,
+      "pCR_1": 62,
+      "tasa_pCR": 0.2831050228310502
+    }
+  },
+  "por_cohorte_subtipo": {
+    "I-SPY1": {
+      "HR+/HER2−": {
+        "pCR_0": 39,
+        "pCR_1": 3
+      },
+      "HER2+": {
+        "pCR_0": 18,
+        "pCR_1": 14
+      },
+      "Triple negativo": {
+        "pCR_0": 19,
+        "pCR_1": 8
+      },
+      "Sin dato": {
+        "pCR_0": 2,
+        "pCR_1": 1
+      }
+    },
+    "I-SPY2": {
+      "HR+/HER2−": {
+        "pCR_0": 253,
+        "pCR_1": 52
+      },
+      "HER2+": {
+        "pCR_0": 107,
+        "pCR_1": 91
+      },
+      "Triple negativo": {
+        "pCR_0": 172,
+        "pCR_1": 109
+      }
+    },
+    "Duke": {
+      "HR+/HER2−": {
+        "pCR_0": 97,
+        "pCR_1": 9
+      },
+      "HER2+": {
+        "pCR_0": 39,
+        "pCR_1": 18
+      },
+      "Triple negativo": {
+        "pCR_0": 29,
+        "pCR_1": 17
+      }
+    }
+  },
+  "hallazgos_auditoria": {
+    "fuente": "Auditoría visual de 60 pacientes de train (20 por cohorte), sobre el corte central y con un único anotador, con revisión asistida por IA; detalle en el informe (docs/informe.pdf)",
+    "corazon": {
+      "descripcion": "estructura grande y muy realzada detrás de la pared torácica (posible corazón)",
+      "si": {
+        "I-SPY1": 0,
+        "I-SPY2": 13,
+        "Duke": 13
+      },
+      "dudoso": {
+        "I-SPY1": 9,
+        "I-SPY2": 3,
+        "Duke": 1
+      },
+      "por_cohorte": 20
+    },
+    "movimiento": {
+      "descripcion": "bordes dobles rojo/azul en el realce EARLY-PRE (posible movimiento entre fases)",
+      "si": {
+        "I-SPY1": 6,
+        "I-SPY2": 3,
+        "Duke": 4
+      },
+      "dudoso": {
+        "I-SPY1": 3,
+        "I-SPY2": 7,
+        "Duke": 4
+      },
+      "por_cohorte": 20
+    },
+    "lesion_delimitada": {
+      "descripcion": "lesión focal delimitada visible en el corte central",
+      "si": {
+        "I-SPY1": 15,
+        "I-SPY2": 13,
+        "Duke": 12
+      },
+      "dudoso": {
+        "I-SPY1": 4,
+        "I-SPY2": 6,
+        "Duke": 6
+      },
+      "por_cohorte": 20
+    },
+    "caja_tumor": {
+      "descripcion": "la caja del tumor de patients.csv (caja_tumor.caja_en_png) cae sobre la lesión",
+      "pacientes_con_lesion_clara": 40,
+      "acierta": 40,
+      "errores": 0,
+      "dentro_recorte_central": {
+        "128": 0.386,
+        "160": 0.613,
+        "192": 0.831
+      },
+      "dentro_recorte_128_por_cohorte": {
+        "I-SPY1": 0.365,
+        "I-SPY2": 0.27,
+        "Duke": 0.828
+      }
+    },
+    "relacion_pcr": {
+      "descripcion": "AUC como predictor único de pCR, en train (IC95 por bootstrap)",
+      "xy_spacing": [
+        0.499,
+        0.46,
+        0.537
+      ],
+      "lado_caja_columnas": [
+        0.44,
+        0.405,
+        0.475
+      ],
+      "lado_caja_filas": [
+        0.465,
+        0.428,
+        0.499
+      ]
+    }
+  }
+}

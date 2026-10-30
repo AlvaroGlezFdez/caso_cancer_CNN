@@ -1,0 +1,112 @@
+{
+  "ejecucion": "20261030_020248_cv_receta24_centrado160_f2",
+  "fecha_hora": "2026-10-30T02:02:48",
+  "modo": "experimento",
+  "comando": "python train.py --epocas 24 --criterio ultima --lr 1e-3 --lr-lineal --weight-decay 1e-2 --dropout 0.35 --cortes-por-paciente 3 --recorte-centrado 160 --fold 2 --nombre cv_receta24_centrado160_f2",
+  "semilla": 42,
+  "fold_val": 2,
+  "pos_weight": null,
+  "n_parametros": 98049,
+  "hiperparametros": {
+    "modelo": "CNNBase",
+    "bloques": 4,
+    "filtros": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "realce": false,
+    "entrada_primer_bloque": "PRE, EARLY, LATE",
+    "dropout": 0.35,
+    "inicializacion": "por defecto de PyTorch",
+    "optimizador": "AdamW",
+    "nota_optimizador": "AdamW con weight_decay 0 equivale a Adam (las ejecuciones anteriores a este cambio usaban torch.optim.Adam)",
+    "lr": 0.001,
+    "lr_lineal": {
+      "desde": 0.001,
+      "hasta": 0.0,
+      "pasos": 1992,
+      "programa": "LambdaLR: lr * (1 - paso / pasos), tras cada paso de optimización"
+    },
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.01,
+    "batch_size": 32,
+    "epocas_max": 24,
+    "paciencia": null,
+    "criterio_seleccion": "ultima",
+    "criterio_parada": "sin selección: la última época entrenada (épocas fijas, sin early stopping) (agregación mean); decide best.pt y el early stopping",
+    "perdida": "BCEWithLogitsLoss",
+    "usar_pos_weight": false,
+    "perdida_validacion": "el mismo criterio que en entrenamiento",
+    "aumento_datos": null,
+    "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+    "recorte_caja": null,
+    "recorte_centrado": {
+      "lado_px": 160,
+      "centro": "centro de caja_tumor.caja_en_png",
+      "reescalado": "ninguno",
+      "fuera_de_imagen": "ceros"
+    },
+    "cortes_por_paciente": 3,
+    "cortes_centrales": null,
+    "semilla_muestreo": 44,
+    "agregacion_paciente": "mean",
+    "umbral": 0.5,
+    "max_batches": null,
+    "overfit_batches": null
+  },
+  "datos": {
+    "pacientes_entrenamiento": 877,
+    "cortes_entrenamiento": 8753,
+    "cortes_entrenamiento_usados": 8753,
+    "imagenes_entrenamiento_por_epoca": 2631,
+    "pacientes_validacion": 220,
+    "cortes_validacion": 2192,
+    "validacion_recortada": false,
+    "tasa_pCR_entrenamiento_por_cohorte": {
+      "Duke": 0.2202,
+      "I-SPY1": 0.2289,
+      "I-SPY2": 0.3307
+    }
+  },
+  "entorno": {
+    "git_commit": "e68d9be16cbddc91a3b93444b09d9c80a863614f",
+    "git_codigo_sin_commit": false,
+    "python": "3.11.16",
+    "pytorch": "2.14.1+rocm7.14",
+    "cuda": null,
+    "dispositivo": "cuda",
+    "gpu": "AMD Radeon RX 6700 XT",
+    "cpu": "Intel(R) Core(TM) Ultra 5 245",
+    "nucleos_logicos": 14,
+    "hilos_torch": 14,
+    "num_workers": 2,
+    "so": "Linux-7.0.0-34-generic-x86_64-desconocido-with-glibc2.43",
+    "utils_caso_sha256": "1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377",
+    "permitir_sin_commit": false
+  },
+  "rutas": {
+    "experimento": "experimentos/20261030_020248_cv_receta24_centrado160_f2",
+    "salidas": "outputs/runs/20261030_020248_cv_receta24_centrado160_f2"
+  },
+  "resultado": {
+    "perdida_primer_lote": 0.7827684879302979,
+    "epocas_ejecutadas": 24,
+    "mejor_epoca": 24,
+    "valor_criterio_mejor_epoca": 0.5280555847983998,
+    "parada_temprana": false,
+    "tiempo_total_s": 116.9968798221089,
+    "tiempo_medio_epoca_s": 4.847046811992186,
+    "auc_val": 0.5280555847983998,
+    "average_precision_val": 0.3067385402877938,
+    "auc_solo_cohorte": 0.5377934519423098
+  },
+  "sha256": {
+    "best.pt": "cd8cb62e491b6c3f9273014993d7ba80942e3375653c980226b3fb93da41cc7c",
+    "last.pt": "7f279a456f823ce3ad145fdd12d52584d0841b1ea6a75d2b620ee4b80ac0c0fa"
+  }
+}

@@ -1,0 +1,277 @@
+2026-10-24 06:20:05 INFO Ejecución 20261024_062005_cv_baseline_suav_f1 (experimento)
+2026-10-24 06:20:05 INFO Comando: python train.py --fold 1 --nombre cv_baseline_suav_f1 --epocas 30 --paciencia 10
+2026-10-24 06:20:05 INFO Fold de validación 1: entrenamiento 878 pacientes / 8755 cortes; validación 219 pacientes / 2190 cortes
+2026-10-24 06:20:05 INFO Preprocesado: preprocesado.preprocesar, idéntico a utils_caso.cargar_imagen (comprobado)
+2026-10-24 06:20:06 INFO Modelo CNNBase: 4 bloques, realce no, 98049 parámetros entrenables; dispositivo cuda; criterio auc_suavizado, paciencia 10; pos_weight no; AdamW weight decay 0; aumento no; recorte por la caja no; 274 lotes de 32 por época
+2026-10-24 06:20:06 INFO Entorno: {'git_commit': 'bf18a5d983e19ca854b2301134afd01b9f501449', 'git_codigo_sin_commit': False, 'python': '3.11.16', 'pytorch': '2.14.1+rocm7.14', 'cuda': None, 'dispositivo': 'cuda', 'gpu': 'AMD Radeon RX 6700 XT', 'cpu': 'Intel(R) Core(TM) Ultra 5 245', 'nucleos_logicos': 14, 'hilos_torch': 14, 'num_workers': 2, 'so': 'Linux-7.0.0-34-generic-x86_64-desconocido-with-glibc2.43', 'utils_caso_sha256': '1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377', 'permitir_sin_commit': False}
+2026-10-24 06:20:09 INFO   lote 27/274  pérdida media 0.6008  datos 0 s  cálculo 3 s
+2026-10-24 06:20:11 INFO   lote 54/274  pérdida media 0.6164  datos 0 s  cálculo 6 s
+2026-10-24 06:20:14 INFO   lote 81/274  pérdida media 0.6113  datos 0 s  cálculo 8 s
+2026-10-24 06:20:17 INFO   lote 108/274  pérdida media 0.6093  datos 0 s  cálculo 11 s
+2026-10-24 06:20:19 INFO   lote 135/274  pérdida media 0.6115  datos 0 s  cálculo 13 s
+2026-10-24 06:20:22 INFO   lote 162/274  pérdida media 0.6117  datos 0 s  cálculo 16 s
+2026-10-24 06:20:24 INFO   lote 189/274  pérdida media 0.6106  datos 0 s  cálculo 18 s
+2026-10-24 06:20:27 INFO   lote 216/274  pérdida media 0.6070  datos 0 s  cálculo 21 s
+2026-10-24 06:20:29 INFO   lote 243/274  pérdida media 0.6026  datos 0 s  cálculo 23 s
+2026-10-24 06:20:32 INFO   lote 270/274  pérdida media 0.6044  datos 0 s  cálculo 26 s
+2026-10-24 06:20:32 INFO Pérdida del primer lote: 0.5758 (referencia ln 2 = 0.6931)
+2026-10-24 06:20:35 INFO Época 1/30 | pérdida entr 0.6048 val 0.6239 | AUC val 0.5225 sens 0.016 esp 1.000 | 29 s (datos 0, cálculo 26, val 2) | 330.9 img/s | CPU 20 % | RAM 1647 MB
+2026-10-24 06:20:37 INFO   lote 27/274  pérdida media 0.6071  datos 0 s  cálculo 3 s
+2026-10-24 06:20:40 INFO   lote 54/274  pérdida media 0.5995  datos 0 s  cálculo 5 s
+2026-10-24 06:20:42 INFO   lote 81/274  pérdida media 0.6108  datos 0 s  cálculo 8 s
+2026-10-24 06:20:45 INFO   lote 108/274  pérdida media 0.6076  datos 0 s  cálculo 10 s
+2026-10-24 06:20:48 INFO   lote 135/274  pérdida media 0.6014  datos 0 s  cálculo 13 s
+2026-10-24 06:20:50 INFO   lote 162/274  pérdida media 0.5975  datos 0 s  cálculo 15 s
+2026-10-24 06:20:53 INFO   lote 189/274  pérdida media 0.5995  datos 0 s  cálculo 18 s
+2026-10-24 06:20:55 INFO   lote 216/274  pérdida media 0.5994  datos 0 s  cálculo 20 s
+2026-10-24 06:20:58 INFO   lote 243/274  pérdida media 0.6009  datos 0 s  cálculo 23 s
+2026-10-24 06:21:00 INFO   lote 270/274  pérdida media 0.5995  datos 0 s  cálculo 26 s
+2026-10-24 06:21:03 INFO Época 2/30 | pérdida entr 0.6001 val 0.6063 | AUC val 0.5285 sens 0.016 esp 1.000 | 28 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1669 MB | auc_suavizado época 1 0.5255 mejor
+2026-10-24 06:21:06 INFO   lote 27/274  pérdida media 0.6155  datos 0 s  cálculo 3 s
+2026-10-24 06:21:08 INFO   lote 54/274  pérdida media 0.5993  datos 0 s  cálculo 5 s
+2026-10-24 06:21:11 INFO   lote 81/274  pérdida media 0.5883  datos 0 s  cálculo 8 s
+2026-10-24 06:21:14 INFO   lote 108/274  pérdida media 0.5894  datos 0 s  cálculo 10 s
+2026-10-24 06:21:16 INFO   lote 135/274  pérdida media 0.5888  datos 0 s  cálculo 13 s
+2026-10-24 06:21:19 INFO   lote 162/274  pérdida media 0.5894  datos 0 s  cálculo 15 s
+2026-10-24 06:21:21 INFO   lote 189/274  pérdida media 0.5911  datos 0 s  cálculo 18 s
+2026-10-24 06:21:24 INFO   lote 216/274  pérdida media 0.5938  datos 0 s  cálculo 20 s
+2026-10-24 06:21:26 INFO   lote 243/274  pérdida media 0.5933  datos 0 s  cálculo 23 s
+2026-10-24 06:21:29 INFO   lote 270/274  pérdida media 0.5929  datos 0 s  cálculo 26 s
+2026-10-24 06:21:32 INFO Época 3/30 | pérdida entr 0.5922 val 0.7001 | AUC val 0.5239 sens 0.145 esp 0.930 | 28 s (datos 0, cálculo 26, val 2) | 336.3 img/s | CPU 21 % | RAM 1668 MB | auc_suavizado época 2 0.5250
+2026-10-24 06:21:34 INFO   lote 27/274  pérdida media 0.5701  datos 0 s  cálculo 3 s
+2026-10-24 06:21:37 INFO   lote 54/274  pérdida media 0.5887  datos 0 s  cálculo 5 s
+2026-10-24 06:21:39 INFO   lote 81/274  pérdida media 0.5911  datos 0 s  cálculo 8 s
+2026-10-24 06:21:42 INFO   lote 108/274  pérdida media 0.5898  datos 0 s  cálculo 10 s
+2026-10-24 06:21:45 INFO   lote 135/274  pérdida media 0.5893  datos 0 s  cálculo 13 s
+2026-10-24 06:21:47 INFO   lote 162/274  pérdida media 0.5882  datos 0 s  cálculo 15 s
+2026-10-24 06:21:50 INFO   lote 189/274  pérdida media 0.5867  datos 0 s  cálculo 18 s
+2026-10-24 06:21:52 INFO   lote 216/274  pérdida media 0.5889  datos 0 s  cálculo 20 s
+2026-10-24 06:21:55 INFO   lote 243/274  pérdida media 0.5856  datos 0 s  cálculo 23 s
+2026-10-24 06:21:57 INFO   lote 270/274  pérdida media 0.5870  datos 0 s  cálculo 26 s
+2026-10-24 06:22:00 INFO Época 4/30 | pérdida entr 0.5863 val 0.6794 | AUC val 0.5673 sens 0.016 esp 0.994 | 28 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1653 MB | auc_suavizado época 3 0.5399 mejor
+2026-10-24 06:22:03 INFO   lote 27/274  pérdida media 0.5988  datos 0 s  cálculo 3 s
+2026-10-24 06:22:05 INFO   lote 54/274  pérdida media 0.5748  datos 0 s  cálculo 5 s
+2026-10-24 06:22:08 INFO   lote 81/274  pérdida media 0.5812  datos 0 s  cálculo 8 s
+2026-10-24 06:22:11 INFO   lote 108/274  pérdida media 0.5818  datos 0 s  cálculo 10 s
+2026-10-24 06:22:13 INFO   lote 135/274  pérdida media 0.5849  datos 0 s  cálculo 13 s
+2026-10-24 06:22:16 INFO   lote 162/274  pérdida media 0.5824  datos 0 s  cálculo 15 s
+2026-10-24 06:22:18 INFO   lote 189/274  pérdida media 0.5786  datos 0 s  cálculo 18 s
+2026-10-24 06:22:21 INFO   lote 216/274  pérdida media 0.5820  datos 0 s  cálculo 20 s
+2026-10-24 06:22:23 INFO   lote 243/274  pérdida media 0.5828  datos 0 s  cálculo 23 s
+2026-10-24 06:22:26 INFO   lote 270/274  pérdida media 0.5805  datos 0 s  cálculo 26 s
+2026-10-24 06:22:29 INFO Época 5/30 | pérdida entr 0.5802 val 0.7409 | AUC val 0.5339 sens 0.097 esp 0.924 | 28 s (datos 0, cálculo 26, val 2) | 336.0 img/s | CPU 21 % | RAM 1646 MB | auc_suavizado época 4 0.5417 mejor
+2026-10-24 06:22:31 INFO   lote 27/274  pérdida media 0.5527  datos 0 s  cálculo 3 s
+2026-10-24 06:22:34 INFO   lote 54/274  pérdida media 0.5678  datos 0 s  cálculo 5 s
+2026-10-24 06:22:37 INFO   lote 81/274  pérdida media 0.5734  datos 0 s  cálculo 8 s
+2026-10-24 06:22:39 INFO   lote 108/274  pérdida media 0.5738  datos 0 s  cálculo 10 s
+2026-10-24 06:22:42 INFO   lote 135/274  pérdida media 0.5716  datos 0 s  cálculo 13 s
+2026-10-24 06:22:44 INFO   lote 162/274  pérdida media 0.5754  datos 0 s  cálculo 15 s
+2026-10-24 06:22:47 INFO   lote 189/274  pérdida media 0.5720  datos 0 s  cálculo 18 s
+2026-10-24 06:22:49 INFO   lote 216/274  pérdida media 0.5704  datos 0 s  cálculo 20 s
+2026-10-24 06:22:52 INFO   lote 243/274  pérdida media 0.5719  datos 0 s  cálculo 23 s
+2026-10-24 06:22:54 INFO   lote 270/274  pérdida media 0.5718  datos 0 s  cálculo 26 s
+2026-10-24 06:22:57 INFO Época 6/30 | pérdida entr 0.5724 val 0.7787 | AUC val 0.5466 sens 0.048 esp 0.981 | 28 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1653 MB | auc_suavizado época 5 0.5493 mejor
+2026-10-24 06:23:00 INFO   lote 27/274  pérdida media 0.5586  datos 0 s  cálculo 3 s
+2026-10-24 06:23:02 INFO   lote 54/274  pérdida media 0.5726  datos 0 s  cálculo 5 s
+2026-10-24 06:23:05 INFO   lote 81/274  pérdida media 0.5707  datos 0 s  cálculo 8 s
+2026-10-24 06:23:08 INFO   lote 108/274  pérdida media 0.5735  datos 0 s  cálculo 10 s
+2026-10-24 06:23:10 INFO   lote 135/274  pérdida media 0.5678  datos 0 s  cálculo 13 s
+2026-10-24 06:23:13 INFO   lote 162/274  pérdida media 0.5708  datos 0 s  cálculo 15 s
+2026-10-24 06:23:15 INFO   lote 189/274  pérdida media 0.5667  datos 0 s  cálculo 18 s
+2026-10-24 06:23:18 INFO   lote 216/274  pérdida media 0.5693  datos 0 s  cálculo 20 s
+2026-10-24 06:23:20 INFO   lote 243/274  pérdida media 0.5703  datos 0 s  cálculo 23 s
+2026-10-24 06:23:23 INFO   lote 270/274  pérdida media 0.5718  datos 0 s  cálculo 26 s
+2026-10-24 06:23:26 INFO Época 7/30 | pérdida entr 0.5710 val 0.7402 | AUC val 0.5776 sens 0.032 esp 0.955 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1667 MB | auc_suavizado época 6 0.5527 mejor
+2026-10-24 06:23:28 INFO   lote 27/274  pérdida media 0.5465  datos 0 s  cálculo 3 s
+2026-10-24 06:23:31 INFO   lote 54/274  pérdida media 0.5600  datos 0 s  cálculo 5 s
+2026-10-24 06:23:34 INFO   lote 81/274  pérdida media 0.5515  datos 0 s  cálculo 8 s
+2026-10-24 06:23:36 INFO   lote 108/274  pérdida media 0.5514  datos 0 s  cálculo 10 s
+2026-10-24 06:23:39 INFO   lote 135/274  pérdida media 0.5522  datos 0 s  cálculo 13 s
+2026-10-24 06:23:41 INFO   lote 162/274  pérdida media 0.5526  datos 0 s  cálculo 15 s
+2026-10-24 06:23:44 INFO   lote 189/274  pérdida media 0.5500  datos 0 s  cálculo 18 s
+2026-10-24 06:23:46 INFO   lote 216/274  pérdida media 0.5536  datos 0 s  cálculo 20 s
+2026-10-24 06:23:49 INFO   lote 243/274  pérdida media 0.5553  datos 0 s  cálculo 23 s
+2026-10-24 06:23:51 INFO   lote 270/274  pérdida media 0.5546  datos 0 s  cálculo 26 s
+2026-10-24 06:23:54 INFO Época 8/30 | pérdida entr 0.5553 val 0.8263 | AUC val 0.5662 sens 0.000 esp 0.994 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1666 MB | auc_suavizado época 7 0.5635 mejor
+2026-10-24 06:23:57 INFO   lote 27/274  pérdida media 0.5335  datos 0 s  cálculo 3 s
+2026-10-24 06:24:00 INFO   lote 54/274  pérdida media 0.5653  datos 0 s  cálculo 5 s
+2026-10-24 06:24:02 INFO   lote 81/274  pérdida media 0.5662  datos 0 s  cálculo 8 s
+2026-10-24 06:24:05 INFO   lote 108/274  pérdida media 0.5643  datos 0 s  cálculo 10 s
+2026-10-24 06:24:07 INFO   lote 135/274  pérdida media 0.5621  datos 0 s  cálculo 13 s
+2026-10-24 06:24:10 INFO   lote 162/274  pérdida media 0.5592  datos 0 s  cálculo 15 s
+2026-10-24 06:24:12 INFO   lote 189/274  pérdida media 0.5603  datos 0 s  cálculo 18 s
+2026-10-24 06:24:15 INFO   lote 216/274  pérdida media 0.5551  datos 0 s  cálculo 20 s
+2026-10-24 06:24:17 INFO   lote 243/274  pérdida media 0.5528  datos 0 s  cálculo 23 s
+2026-10-24 06:24:20 INFO   lote 270/274  pérdida media 0.5502  datos 0 s  cálculo 26 s
+2026-10-24 06:24:23 INFO Época 9/30 | pérdida entr 0.5504 val 0.8956 | AUC val 0.5627 sens 0.000 esp 0.975 | 28 s (datos 0, cálculo 26, val 2) | 336.5 img/s | CPU 21 % | RAM 1667 MB | auc_suavizado época 8 0.5688 mejor
+2026-10-24 06:24:25 INFO   lote 27/274  pérdida media 0.5208  datos 0 s  cálculo 3 s
+2026-10-24 06:24:28 INFO   lote 54/274  pérdida media 0.5270  datos 0 s  cálculo 5 s
+2026-10-24 06:24:31 INFO   lote 81/274  pérdida media 0.5281  datos 0 s  cálculo 8 s
+2026-10-24 06:24:33 INFO   lote 108/274  pérdida media 0.5330  datos 0 s  cálculo 10 s
+2026-10-24 06:24:36 INFO   lote 135/274  pérdida media 0.5369  datos 0 s  cálculo 13 s
+2026-10-24 06:24:38 INFO   lote 162/274  pérdida media 0.5422  datos 0 s  cálculo 15 s
+2026-10-24 06:24:41 INFO   lote 189/274  pérdida media 0.5396  datos 0 s  cálculo 18 s
+2026-10-24 06:24:43 INFO   lote 216/274  pérdida media 0.5391  datos 0 s  cálculo 20 s
+2026-10-24 06:24:46 INFO   lote 243/274  pérdida media 0.5402  datos 0 s  cálculo 23 s
+2026-10-24 06:24:49 INFO   lote 270/274  pérdida media 0.5402  datos 0 s  cálculo 26 s
+2026-10-24 06:24:51 INFO Época 10/30 | pérdida entr 0.5410 val 0.9121 | AUC val 0.5784 sens 0.000 esp 0.994 | 28 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1664 MB | auc_suavizado época 9 0.5691 mejor
+2026-10-24 06:24:54 INFO   lote 27/274  pérdida media 0.5060  datos 0 s  cálculo 3 s
+2026-10-24 06:24:57 INFO   lote 54/274  pérdida media 0.5087  datos 0 s  cálculo 5 s
+2026-10-24 06:24:59 INFO   lote 81/274  pérdida media 0.5154  datos 0 s  cálculo 8 s
+2026-10-24 06:25:02 INFO   lote 108/274  pérdida media 0.5185  datos 0 s  cálculo 10 s
+2026-10-24 06:25:04 INFO   lote 135/274  pérdida media 0.5227  datos 0 s  cálculo 13 s
+2026-10-24 06:25:07 INFO   lote 162/274  pérdida media 0.5238  datos 0 s  cálculo 15 s
+2026-10-24 06:25:09 INFO   lote 189/274  pérdida media 0.5250  datos 0 s  cálculo 18 s
+2026-10-24 06:25:12 INFO   lote 216/274  pérdida media 0.5230  datos 0 s  cálculo 20 s
+2026-10-24 06:25:14 INFO   lote 243/274  pérdida media 0.5206  datos 0 s  cálculo 23 s
+2026-10-24 06:25:17 INFO   lote 270/274  pérdida media 0.5204  datos 0 s  cálculo 26 s
+2026-10-24 06:25:20 INFO Época 11/30 | pérdida entr 0.5200 val 1.0375 | AUC val 0.5864 sens 0.226 esp 0.854 | 28 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1662 MB | auc_suavizado época 10 0.5758 mejor
+2026-10-24 06:25:23 INFO   lote 27/274  pérdida media 0.5114  datos 0 s  cálculo 3 s
+2026-10-24 06:25:25 INFO   lote 54/274  pérdida media 0.5104  datos 0 s  cálculo 5 s
+2026-10-24 06:25:28 INFO   lote 81/274  pérdida media 0.5189  datos 0 s  cálculo 8 s
+2026-10-24 06:25:30 INFO   lote 108/274  pérdida media 0.5163  datos 0 s  cálculo 10 s
+2026-10-24 06:25:33 INFO   lote 135/274  pérdida media 0.5161  datos 0 s  cálculo 13 s
+2026-10-24 06:25:35 INFO   lote 162/274  pérdida media 0.5131  datos 0 s  cálculo 15 s
+2026-10-24 06:25:38 INFO   lote 189/274  pérdida media 0.5111  datos 0 s  cálculo 18 s
+2026-10-24 06:25:40 INFO   lote 216/274  pérdida media 0.5125  datos 0 s  cálculo 20 s
+2026-10-24 06:25:43 INFO   lote 243/274  pérdida media 0.5092  datos 0 s  cálculo 23 s
+2026-10-24 06:25:46 INFO   lote 270/274  pérdida media 0.5122  datos 0 s  cálculo 26 s
+2026-10-24 06:25:48 INFO Época 12/30 | pérdida entr 0.5125 val 0.8755 | AUC val 0.5911 sens 0.032 esp 0.981 | 29 s (datos 0, cálculo 26, val 2) | 336.0 img/s | CPU 21 % | RAM 1647 MB | auc_suavizado época 11 0.5853 mejor
+2026-10-24 06:25:51 INFO   lote 27/274  pérdida media 0.4461  datos 0 s  cálculo 3 s
+2026-10-24 06:25:54 INFO   lote 54/274  pérdida media 0.4854  datos 0 s  cálculo 5 s
+2026-10-24 06:25:56 INFO   lote 81/274  pérdida media 0.4936  datos 0 s  cálculo 8 s
+2026-10-24 06:25:59 INFO   lote 108/274  pérdida media 0.4929  datos 0 s  cálculo 10 s
+2026-10-24 06:26:01 INFO   lote 135/274  pérdida media 0.4912  datos 0 s  cálculo 13 s
+2026-10-24 06:26:04 INFO   lote 162/274  pérdida media 0.4963  datos 0 s  cálculo 15 s
+2026-10-24 06:26:06 INFO   lote 189/274  pérdida media 0.5004  datos 0 s  cálculo 18 s
+2026-10-24 06:26:09 INFO   lote 216/274  pérdida media 0.5041  datos 0 s  cálculo 20 s
+2026-10-24 06:26:12 INFO   lote 243/274  pérdida media 0.5046  datos 0 s  cálculo 23 s
+2026-10-24 06:26:14 INFO   lote 270/274  pérdida media 0.5018  datos 0 s  cálculo 26 s
+2026-10-24 06:26:17 INFO Época 13/30 | pérdida entr 0.5018 val 0.8634 | AUC val 0.6256 sens 0.371 esp 0.771 | 29 s (datos 0, cálculo 26, val 2) | 336.0 img/s | CPU 21 % | RAM 1647 MB | auc_suavizado época 12 0.6011 mejor
+2026-10-24 06:26:20 INFO   lote 27/274  pérdida media 0.4672  datos 0 s  cálculo 3 s
+2026-10-24 06:26:22 INFO   lote 54/274  pérdida media 0.4835  datos 0 s  cálculo 5 s
+2026-10-24 06:26:25 INFO   lote 81/274  pérdida media 0.4893  datos 0 s  cálculo 8 s
+2026-10-24 06:26:27 INFO   lote 108/274  pérdida media 0.4883  datos 0 s  cálculo 10 s
+2026-10-24 06:26:30 INFO   lote 135/274  pérdida media 0.4916  datos 0 s  cálculo 13 s
+2026-10-24 06:26:32 INFO   lote 162/274  pérdida media 0.4890  datos 0 s  cálculo 15 s
+2026-10-24 06:26:35 INFO   lote 189/274  pérdida media 0.4841  datos 0 s  cálculo 18 s
+2026-10-24 06:26:37 INFO   lote 216/274  pérdida media 0.4851  datos 0 s  cálculo 20 s
+2026-10-24 06:26:40 INFO   lote 243/274  pérdida media 0.4853  datos 0 s  cálculo 23 s
+2026-10-24 06:26:43 INFO   lote 270/274  pérdida media 0.4834  datos 0 s  cálculo 26 s
+2026-10-24 06:26:45 INFO Época 14/30 | pérdida entr 0.4837 val 1.0705 | AUC val 0.6008 sens 0.032 esp 0.975 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1663 MB | auc_suavizado época 13 0.6058 mejor
+2026-10-24 06:26:48 INFO   lote 27/274  pérdida media 0.4472  datos 0 s  cálculo 3 s
+2026-10-24 06:26:51 INFO   lote 54/274  pérdida media 0.4458  datos 0 s  cálculo 5 s
+2026-10-24 06:26:53 INFO   lote 81/274  pérdida media 0.4651  datos 0 s  cálculo 8 s
+2026-10-24 06:26:56 INFO   lote 108/274  pérdida media 0.4699  datos 0 s  cálculo 10 s
+2026-10-24 06:26:58 INFO   lote 135/274  pérdida media 0.4748  datos 0 s  cálculo 13 s
+2026-10-24 06:27:01 INFO   lote 162/274  pérdida media 0.4773  datos 0 s  cálculo 15 s
+2026-10-24 06:27:03 INFO   lote 189/274  pérdida media 0.4743  datos 0 s  cálculo 18 s
+2026-10-24 06:27:06 INFO   lote 216/274  pérdida media 0.4732  datos 0 s  cálculo 20 s
+2026-10-24 06:27:09 INFO   lote 243/274  pérdida media 0.4720  datos 0 s  cálculo 23 s
+2026-10-24 06:27:11 INFO   lote 270/274  pérdida media 0.4697  datos 0 s  cálculo 26 s
+2026-10-24 06:27:14 INFO Época 15/30 | pérdida entr 0.4698 val 0.8953 | AUC val 0.5787 sens 0.355 esp 0.732 | 28 s (datos 0, cálculo 26, val 2) | 336.3 img/s | CPU 21 % | RAM 1667 MB | auc_suavizado época 14 0.6017
+2026-10-24 06:27:17 INFO   lote 27/274  pérdida media 0.4836  datos 0 s  cálculo 3 s
+2026-10-24 06:27:19 INFO   lote 54/274  pérdida media 0.4649  datos 0 s  cálculo 5 s
+2026-10-24 06:27:22 INFO   lote 81/274  pérdida media 0.4518  datos 0 s  cálculo 8 s
+2026-10-24 06:27:24 INFO   lote 108/274  pérdida media 0.4477  datos 0 s  cálculo 10 s
+2026-10-24 06:27:27 INFO   lote 135/274  pérdida media 0.4472  datos 0 s  cálculo 13 s
+2026-10-24 06:27:29 INFO   lote 162/274  pérdida media 0.4437  datos 0 s  cálculo 15 s
+2026-10-24 06:27:32 INFO   lote 189/274  pérdida media 0.4467  datos 0 s  cálculo 18 s
+2026-10-24 06:27:35 INFO   lote 216/274  pérdida media 0.4442  datos 0 s  cálculo 20 s
+2026-10-24 06:27:37 INFO   lote 243/274  pérdida media 0.4446  datos 0 s  cálculo 23 s
+2026-10-24 06:27:40 INFO   lote 270/274  pérdida media 0.4526  datos 0 s  cálculo 26 s
+2026-10-24 06:27:42 INFO Época 16/30 | pérdida entr 0.4533 val 1.2122 | AUC val 0.5302 sens 0.645 esp 0.427 | 29 s (datos 0, cálculo 26, val 2) | 336.1 img/s | CPU 21 % | RAM 1663 MB | auc_suavizado época 15 0.5699
+2026-10-24 06:27:45 INFO   lote 27/274  pérdida media 0.4401  datos 0 s  cálculo 3 s
+2026-10-24 06:27:48 INFO   lote 54/274  pérdida media 0.4460  datos 0 s  cálculo 5 s
+2026-10-24 06:27:50 INFO   lote 81/274  pérdida media 0.4598  datos 0 s  cálculo 8 s
+2026-10-24 06:27:53 INFO   lote 108/274  pérdida media 0.4478  datos 0 s  cálculo 10 s
+2026-10-24 06:27:55 INFO   lote 135/274  pérdida media 0.4482  datos 0 s  cálculo 13 s
+2026-10-24 06:27:58 INFO   lote 162/274  pérdida media 0.4485  datos 0 s  cálculo 15 s
+2026-10-24 06:28:00 INFO   lote 189/274  pérdida media 0.4419  datos 0 s  cálculo 18 s
+2026-10-24 06:28:03 INFO   lote 216/274  pérdida media 0.4460  datos 0 s  cálculo 20 s
+2026-10-24 06:28:06 INFO   lote 243/274  pérdida media 0.4430  datos 0 s  cálculo 23 s
+2026-10-24 06:28:08 INFO   lote 270/274  pérdida media 0.4388  datos 0 s  cálculo 26 s
+2026-10-24 06:28:11 INFO Época 17/30 | pérdida entr 0.4380 val 0.8881 | AUC val 0.5696 sens 0.258 esp 0.777 | 29 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1647 MB | auc_suavizado época 16 0.5595
+2026-10-24 06:28:14 INFO   lote 27/274  pérdida media 0.4164  datos 0 s  cálculo 3 s
+2026-10-24 06:28:16 INFO   lote 54/274  pérdida media 0.4371  datos 0 s  cálculo 5 s
+2026-10-24 06:28:19 INFO   lote 81/274  pérdida media 0.4253  datos 0 s  cálculo 8 s
+2026-10-24 06:28:21 INFO   lote 108/274  pérdida media 0.4248  datos 0 s  cálculo 10 s
+2026-10-24 06:28:24 INFO   lote 135/274  pérdida media 0.4249  datos 0 s  cálculo 13 s
+2026-10-24 06:28:26 INFO   lote 162/274  pérdida media 0.4282  datos 0 s  cálculo 15 s
+2026-10-24 06:28:29 INFO   lote 189/274  pérdida media 0.4262  datos 0 s  cálculo 18 s
+2026-10-24 06:28:32 INFO   lote 216/274  pérdida media 0.4248  datos 0 s  cálculo 20 s
+2026-10-24 06:28:34 INFO   lote 243/274  pérdida media 0.4253  datos 0 s  cálculo 23 s
+2026-10-24 06:28:37 INFO   lote 270/274  pérdida media 0.4273  datos 0 s  cálculo 26 s
+2026-10-24 06:28:39 INFO Época 18/30 | pérdida entr 0.4273 val 0.9124 | AUC val 0.5580 sens 0.129 esp 0.904 | 28 s (datos 0, cálculo 26, val 2) | 336.5 img/s | CPU 21 % | RAM 1671 MB | auc_suavizado época 17 0.5526
+2026-10-24 06:28:42 INFO   lote 27/274  pérdida media 0.4060  datos 0 s  cálculo 3 s
+2026-10-24 06:28:45 INFO   lote 54/274  pérdida media 0.3962  datos 0 s  cálculo 5 s
+2026-10-24 06:28:47 INFO   lote 81/274  pérdida media 0.4088  datos 0 s  cálculo 8 s
+2026-10-24 06:28:50 INFO   lote 108/274  pérdida media 0.4214  datos 0 s  cálculo 10 s
+2026-10-24 06:28:52 INFO   lote 135/274  pérdida media 0.4206  datos 0 s  cálculo 13 s
+2026-10-24 06:28:55 INFO   lote 162/274  pérdida media 0.4168  datos 0 s  cálculo 15 s
+2026-10-24 06:28:57 INFO   lote 189/274  pérdida media 0.4151  datos 0 s  cálculo 18 s
+2026-10-24 06:29:00 INFO   lote 216/274  pérdida media 0.4128  datos 0 s  cálculo 20 s
+2026-10-24 06:29:03 INFO   lote 243/274  pérdida media 0.4102  datos 0 s  cálculo 23 s
+2026-10-24 06:29:05 INFO   lote 270/274  pérdida media 0.4048  datos 0 s  cálculo 26 s
+2026-10-24 06:29:08 INFO Época 19/30 | pérdida entr 0.4043 val 0.8983 | AUC val 0.5810 sens 0.194 esp 0.885 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1647 MB | auc_suavizado época 18 0.5695
+2026-10-24 06:29:11 INFO   lote 27/274  pérdida media 0.3892  datos 0 s  cálculo 3 s
+2026-10-24 06:29:13 INFO   lote 54/274  pérdida media 0.4118  datos 0 s  cálculo 5 s
+2026-10-24 06:29:16 INFO   lote 81/274  pérdida media 0.4044  datos 0 s  cálculo 8 s
+2026-10-24 06:29:18 INFO   lote 108/274  pérdida media 0.4042  datos 0 s  cálculo 10 s
+2026-10-24 06:29:21 INFO   lote 135/274  pérdida media 0.3997  datos 0 s  cálculo 13 s
+2026-10-24 06:29:23 INFO   lote 162/274  pérdida media 0.3991  datos 0 s  cálculo 15 s
+2026-10-24 06:29:26 INFO   lote 189/274  pérdida media 0.3964  datos 0 s  cálculo 18 s
+2026-10-24 06:29:29 INFO   lote 216/274  pérdida media 0.4032  datos 0 s  cálculo 20 s
+2026-10-24 06:29:31 INFO   lote 243/274  pérdida media 0.4033  datos 0 s  cálculo 23 s
+2026-10-24 06:29:34 INFO   lote 270/274  pérdida media 0.4016  datos 0 s  cálculo 26 s
+2026-10-24 06:29:36 INFO Época 20/30 | pérdida entr 0.4019 val 0.9065 | AUC val 0.5486 sens 0.403 esp 0.688 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1659 MB | auc_suavizado época 19 0.5625
+2026-10-24 06:29:39 INFO   lote 27/274  pérdida media 0.3862  datos 0 s  cálculo 3 s
+2026-10-24 06:29:42 INFO   lote 54/274  pérdida media 0.3718  datos 0 s  cálculo 5 s
+2026-10-24 06:29:44 INFO   lote 81/274  pérdida media 0.3705  datos 0 s  cálculo 8 s
+2026-10-24 06:29:47 INFO   lote 108/274  pérdida media 0.3736  datos 0 s  cálculo 10 s
+2026-10-24 06:29:49 INFO   lote 135/274  pérdida media 0.3714  datos 0 s  cálculo 13 s
+2026-10-24 06:29:52 INFO   lote 162/274  pérdida media 0.3696  datos 0 s  cálculo 15 s
+2026-10-24 06:29:54 INFO   lote 189/274  pérdida media 0.3691  datos 0 s  cálculo 18 s
+2026-10-24 06:29:57 INFO   lote 216/274  pérdida media 0.3639  datos 0 s  cálculo 20 s
+2026-10-24 06:30:00 INFO   lote 243/274  pérdida media 0.3617  datos 0 s  cálculo 23 s
+2026-10-24 06:30:02 INFO   lote 270/274  pérdida media 0.3626  datos 0 s  cálculo 26 s
+2026-10-24 06:30:05 INFO Época 21/30 | pérdida entr 0.3626 val 1.0037 | AUC val 0.5513 sens 0.210 esp 0.841 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1655 MB | auc_suavizado época 20 0.5603
+2026-10-24 06:30:08 INFO   lote 27/274  pérdida media 0.3294  datos 0 s  cálculo 3 s
+2026-10-24 06:30:10 INFO   lote 54/274  pérdida media 0.3390  datos 0 s  cálculo 5 s
+2026-10-24 06:30:13 INFO   lote 81/274  pérdida media 0.3464  datos 0 s  cálculo 8 s
+2026-10-24 06:30:15 INFO   lote 108/274  pérdida media 0.3407  datos 0 s  cálculo 10 s
+2026-10-24 06:30:18 INFO   lote 135/274  pérdida media 0.3406  datos 0 s  cálculo 13 s
+2026-10-24 06:30:20 INFO   lote 162/274  pérdida media 0.3465  datos 0 s  cálculo 15 s
+2026-10-24 06:30:23 INFO   lote 189/274  pérdida media 0.3498  datos 0 s  cálculo 18 s
+2026-10-24 06:30:26 INFO   lote 216/274  pérdida media 0.3541  datos 0 s  cálculo 20 s
+2026-10-24 06:30:28 INFO   lote 243/274  pérdida media 0.3536  datos 0 s  cálculo 23 s
+2026-10-24 06:30:31 INFO   lote 270/274  pérdida media 0.3512  datos 0 s  cálculo 26 s
+2026-10-24 06:30:34 INFO Época 22/30 | pérdida entr 0.3514 val 1.2172 | AUC val 0.5504 sens 0.532 esp 0.586 | 29 s (datos 0, cálculo 26, val 2) | 336.2 img/s | CPU 21 % | RAM 1647 MB | auc_suavizado época 21 0.5501
+2026-10-24 06:30:36 INFO   lote 27/274  pérdida media 0.3506  datos 0 s  cálculo 3 s
+2026-10-24 06:30:39 INFO   lote 54/274  pérdida media 0.3568  datos 0 s  cálculo 5 s
+2026-10-24 06:30:41 INFO   lote 81/274  pérdida media 0.3532  datos 0 s  cálculo 8 s
+2026-10-24 06:30:44 INFO   lote 108/274  pérdida media 0.3542  datos 0 s  cálculo 10 s
+2026-10-24 06:30:46 INFO   lote 135/274  pérdida media 0.3461  datos 0 s  cálculo 13 s
+2026-10-24 06:30:49 INFO   lote 162/274  pérdida media 0.3451  datos 0 s  cálculo 15 s
+2026-10-24 06:30:52 INFO   lote 189/274  pérdida media 0.3479  datos 0 s  cálculo 18 s
+2026-10-24 06:30:54 INFO   lote 216/274  pérdida media 0.3517  datos 0 s  cálculo 20 s
+2026-10-24 06:30:57 INFO   lote 243/274  pérdida media 0.3469  datos 0 s  cálculo 23 s
+2026-10-24 06:30:59 INFO   lote 270/274  pérdida media 0.3468  datos 0 s  cálculo 26 s
+2026-10-24 06:31:02 INFO Época 23/30 | pérdida entr 0.3478 val 1.2219 | AUC val 0.5431 sens 0.581 esp 0.554 | 28 s (datos 0, cálculo 26, val 2) | 336.3 img/s | CPU 21 % | RAM 1665 MB | auc_suavizado época 22 0.5483
+2026-10-24 06:31:05 INFO   lote 27/274  pérdida media 0.3548  datos 0 s  cálculo 3 s
+2026-10-24 06:31:07 INFO   lote 54/274  pérdida media 0.3638  datos 0 s  cálculo 5 s
+2026-10-24 06:31:10 INFO   lote 81/274  pérdida media 0.3468  datos 0 s  cálculo 8 s
+2026-10-24 06:31:12 INFO   lote 108/274  pérdida media 0.3529  datos 0 s  cálculo 10 s
+2026-10-24 06:31:15 INFO   lote 135/274  pérdida media 0.3531  datos 0 s  cálculo 13 s
+2026-10-24 06:31:17 INFO   lote 162/274  pérdida media 0.3484  datos 0 s  cálculo 15 s
+2026-10-24 06:31:20 INFO   lote 189/274  pérdida media 0.3404  datos 0 s  cálculo 18 s
+2026-10-24 06:31:23 INFO   lote 216/274  pérdida media 0.3378  datos 0 s  cálculo 20 s
+2026-10-24 06:31:25 INFO   lote 243/274  pérdida media 0.3365  datos 0 s  cálculo 23 s
+2026-10-24 06:31:28 INFO   lote 270/274  pérdida media 0.3352  datos 0 s  cálculo 26 s
+2026-10-24 06:31:31 INFO Época 24/30 | pérdida entr 0.3344 val 1.1114 | AUC val 0.5586 sens 0.468 esp 0.573 | 28 s (datos 0, cálculo 26, val 2) | 336.4 img/s | CPU 21 % | RAM 1652 MB | auc_suavizado época 23 0.5507
+2026-10-24 06:31:31 INFO Early stopping: 10 épocas sin mejorar el criterio auc_suavizado
+2026-10-24 06:31:31 INFO Al terminar, con las épocas disponibles | auc_suavizado época 24 0.5509
+2026-10-24 06:31:33 INFO Mejor época 13; best.pt recargado: diferencia máxima con las predicciones de esa época = 0.00e+00
+2026-10-24 06:31:33 INFO Mejor modelo (validación, por paciente): AUC 0.6256 | AP 0.3936 | sens 0.371 | esp 0.771 | Brier 0.2188 | AUC solo cohorte 0.5260
+2026-10-24 06:31:33 INFO Fila añadida a experimentos/experimentos.csv
+2026-10-24 06:31:33 INFO Hecho en 11.4 min. Resultados en experimentos/20261024_062005_cv_baseline_suav_f1 y outputs/runs/20261024_062005_cv_baseline_suav_f1

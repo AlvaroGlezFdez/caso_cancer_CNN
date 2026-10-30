@@ -1,0 +1,64 @@
+# Configuración de la app (streamlit run app/streamlit_app.py desde la raíz).
+# Streamlit Community Cloud también lee este fichero de la raíz del repositorio.
+
+[server]
+# Límite del navegador por fichero, en MB. La app rechaza además, con un mensaje
+# en español, cualquier fichero de más de 2 MB (nucleo/validacion.py).
+maxUploadSize = 10
+
+[client]
+# Ningún error muestra trazas de Python en el navegador (solo en la consola).
+showErrorDetails = "none"
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+magicEnabled = false
+
+# Tema clínico: azul marino profundo, paneles con borde fino y un único acento
+# verde azulado (teal); ámbar solo para avisos. La misma paleta que
+# app/estaticos/estilo.css y app/paginas/graficos.py (plantilla de plotly).
+[theme]
+base = "dark"
+primaryColor = "#38C6B6"
+backgroundColor = "#0C1B2E"
+secondaryBackgroundColor = "#12253C"
+textColor = "#EDF2F7"
+linkColor = "#38C6B6"
+borderColor = "#1F3651"
+dataframeBorderColor = "#1F3651"
+dataframeHeaderBackgroundColor = "#0F2136"
+dataframeHeaderTextColor = "#A9B7C9"
+codeBackgroundColor = "#0F2136"
+codeTextColor = "#EDF2F7"
+showWidgetBorder = true
+showSidebarBorder = true
+baseRadius = "0.3rem"
+buttonRadius = "0.3rem"
+# Inter para todo (cifras tabulares en estilo.css); IBM Plex Mono solo para el
+# SHA-256 del panel técnico. Desde Google Fonts.
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap, monospace"
+headingFontWeights = [600, 600, 600, 600, 600, 600]
+headingFontSizes = ["1.75rem", "1.3rem", "1.1rem", "1rem", "0.95rem", "0.9rem"]
+metricValueFontSize = "1.7rem"
+metricValueFontWeight = 600
+paddingTop = "4.75rem"
+blueColor = "#38C6B6"
+blueBackgroundColor = "#0F2E33"
+blueTextColor = "#A7EDE4"
+orangeColor = "#F59E0B"
+orangeBackgroundColor = "#2A1F0A"
+orangeTextColor = "#FCD34D"
+yellowColor = "#F59E0B"
+yellowBackgroundColor = "#2A1F0A"
+yellowTextColor = "#FCD34D"
+
+[theme.sidebar]
+backgroundColor = "#091626"
+secondaryBackgroundColor = "#0F2136"
+textColor = "#C9D4E2"
+borderColor = "#1F3651"
+linkColor = "#38C6B6"

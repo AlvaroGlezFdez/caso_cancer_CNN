@@ -1,0 +1,39 @@
+# Qué NO se publica de este repositorio.
+
+# --- Entorno de Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- Datos con etiquetas: el dataset BreastDCEDL (lleva la pCR de cada paciente)
+breastdcedl/
+# Auditoría visual (vive fuera del repositorio; por si se copia dentro)
+exploracion/
+
+# --- Pesos y predicciones: ningún .pt se versiona. Los del modelo final están en Hugging Face
+# (AlvaroGlez/pcr-cnn-breastdcedl) y la app los descarga y verifica (app/nucleo/paquete.py).
+outputs/
+*.pt
+*.pth
+# Probabilidades out-of-fold por paciente y por corte (exportar_oof.py): llevan ids
+experimentos/oof*/
+
+# --- Registros: solo el train.log de cada ejecución de experimentos/
+*.log
+!experimentos/**/train.log
+
+# --- Notas y configuración locales: cualquier .md de la raíz salvo el README
+# (la documentación que se publica va en docs/)
+/*.md
+!/README.md
+.vscode/
+.idea/
+
+# --- Secretos (Streamlit Community Cloud y variables de entorno)
+.streamlit/secrets.toml
+.env

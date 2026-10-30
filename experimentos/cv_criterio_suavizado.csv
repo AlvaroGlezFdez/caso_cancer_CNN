@@ -1,0 +1,11 @@
+configuracion,fold,ejecucion,paciencia,epocas_entrenadas,mejor_epoca_auc,auc_criterio_auc,mejor_epoca_suavizado,valor_suavizado,auc_criterio_suavizado,exacta,auc_necesario_epoca_siguiente
+linea_base,0,20261022_044451_cv_baseline_f0,10,20,10,0.598387,10,0.568649,0.598387,False,0.562802
+linea_base,1,20261022_045427_cv_baseline_f1,10,23,13,0.625642,13,0.605849,0.625642,False,0.668550
+linea_base,2,20261022_050538_cv_baseline_f2,10,30,22,0.607959,22,0.589887,0.607959,True,
+linea_base,3,20261022_052003_cv_baseline_f3,10,26,16,0.540230,25,0.493180,0.523402,False,
+linea_base,4,20261022_053232_cv_baseline_f4,10,15,5,0.610746,6,0.595884,0.572118,False,
+aumento,0,20261022_053954_cv_aumento_f0,10,20,10,0.577319,10,0.554503,0.577319,False,0.543380
+aumento,1,20261022_054946_cv_aumento_f1,10,23,13,0.568934,14,0.533217,0.508630,False,
+aumento,2,20261022_060058_cv_aumento_f2,10,12,2,0.599958,1,0.594536,0.589115,True,
+aumento,3,20261022_060652_cv_aumento_f3,10,22,12,0.548966,13,0.534284,0.531770,False,
+aumento,4,20261022_061736_cv_aumento_f4,10,11,1,0.614341,6,0.586741,0.613725,False,

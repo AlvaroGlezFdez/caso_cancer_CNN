@@ -1,0 +1,99 @@
+{
+  "ejecucion": "20261022_060058_cv_aumento_f2",
+  "fecha_hora": "2026-10-22T06:00:58",
+  "modo": "experimento",
+  "comando": "python train.py --aumento --fold 2 --nombre cv_aumento_f2 --epocas 30 --paciencia 10",
+  "semilla": 42,
+  "fold_val": 2,
+  "pos_weight": null,
+  "n_parametros": 98049,
+  "hiperparametros": {
+    "modelo": "CNNBase",
+    "filtros": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "dropout": 0.3,
+    "inicializacion": "por defecto de PyTorch",
+    "optimizador": "AdamW",
+    "nota_optimizador": "AdamW con weight_decay 0 equivale a Adam (las ejecuciones anteriores a este cambio usaban torch.optim.Adam)",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.0,
+    "batch_size": 32,
+    "epocas_max": 30,
+    "paciencia": 10,
+    "criterio_parada": "AUC de validación por paciente (agregación mean)",
+    "perdida": "BCEWithLogitsLoss",
+    "usar_pos_weight": false,
+    "perdida_validacion": "el mismo criterio que en entrenamiento",
+    "aumento_datos": {
+      "funcion": "aumento.aumentar",
+      "solo_entrenamiento": true,
+      "misma_transformacion_en_las_3_fases": true,
+      "volteo_horizontal_prob": 0.5,
+      "rotacion_max_grados": 10.0,
+      "rotacion_distribucion": "uniforme",
+      "interpolacion": "bilineal",
+      "relleno": 0.0,
+      "intensidad": "sin cambios",
+      "semilla_generador": 43
+    },
+    "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+    "agregacion_paciente": "mean",
+    "umbral": 0.5,
+    "max_batches": null,
+    "overfit_batches": null
+  },
+  "datos": {
+    "pacientes_entrenamiento": 877,
+    "cortes_entrenamiento": 8753,
+    "pacientes_validacion": 220,
+    "cortes_validacion": 2192,
+    "validacion_recortada": false,
+    "tasa_pCR_entrenamiento_por_cohorte": {
+      "Duke": 0.2202,
+      "I-SPY1": 0.2289,
+      "I-SPY2": 0.3307
+    }
+  },
+  "entorno": {
+    "git_commit": "7dd2e39074de9ec56b22b13166422066a30fe851",
+    "git_codigo_sin_commit": false,
+    "python": "3.11.16",
+    "pytorch": "2.14.1+rocm7.14",
+    "cuda": null,
+    "dispositivo": "cuda",
+    "gpu": "AMD Radeon RX 6700 XT",
+    "cpu": "Intel(R) Core(TM) Ultra 5 245",
+    "nucleos_logicos": 14,
+    "hilos_torch": 14,
+    "num_workers": 2,
+    "so": "Linux-7.0.0-34-generic-x86_64-desconocido-with-glibc2.43",
+    "utils_caso_sha256": "1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377",
+    "permitir_sin_commit": false
+  },
+  "rutas": {
+    "experimento": "experimentos/20261022_060058_cv_aumento_f2",
+    "salidas": "outputs/runs/20261022_060058_cv_aumento_f2"
+  },
+  "resultado": {
+    "perdida_primer_lote": 0.6111721396446228,
+    "epocas_ejecutadas": 12,
+    "mejor_epoca": 2,
+    "parada_temprana": true,
+    "tiempo_total_s": 348.09782283000095,
+    "tiempo_medio_epoca_s": 28.98561899716651,
+    "auc_val": 0.5999578903042426,
+    "auc_solo_cohorte": 0.5377934519423098
+  },
+  "sha256": {
+    "best.pt": "3076755ca2ebd4eb16f9eb76bcefe06de97564fcc11e31bcd13a5420ddcd5aed",
+    "last.pt": "b3817af512217942944e9d73ff93fd5af5d5ecf7f22e5d7dc8b4fdb0e7e9bfad"
+  }
+}

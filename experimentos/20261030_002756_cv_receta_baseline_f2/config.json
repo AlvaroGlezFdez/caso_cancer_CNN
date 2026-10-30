@@ -1,0 +1,107 @@
+{
+  "ejecucion": "20261030_002756_cv_receta_baseline_f2",
+  "fecha_hora": "2026-10-30T00:27:56",
+  "modo": "experimento",
+  "comando": "python train.py --epocas 12 --criterio ultima --lr 1e-3 --lr-lineal --weight-decay 1e-2 --dropout 0.35 --cortes-por-paciente 3 --fold 2 --nombre cv_receta_baseline_f2",
+  "semilla": 42,
+  "fold_val": 2,
+  "pos_weight": null,
+  "n_parametros": 98049,
+  "hiperparametros": {
+    "modelo": "CNNBase",
+    "bloques": 4,
+    "filtros": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "realce": false,
+    "entrada_primer_bloque": "PRE, EARLY, LATE",
+    "dropout": 0.35,
+    "inicializacion": "por defecto de PyTorch",
+    "optimizador": "AdamW",
+    "nota_optimizador": "AdamW con weight_decay 0 equivale a Adam (las ejecuciones anteriores a este cambio usaban torch.optim.Adam)",
+    "lr": 0.001,
+    "lr_lineal": {
+      "desde": 0.001,
+      "hasta": 0.0,
+      "pasos": 996,
+      "programa": "LambdaLR: lr * (1 - paso / pasos), tras cada paso de optimización"
+    },
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.01,
+    "batch_size": 32,
+    "epocas_max": 12,
+    "paciencia": null,
+    "criterio_seleccion": "ultima",
+    "criterio_parada": "sin selección: la última época entrenada (épocas fijas, sin early stopping) (agregación mean); decide best.pt y el early stopping",
+    "perdida": "BCEWithLogitsLoss",
+    "usar_pos_weight": false,
+    "perdida_validacion": "el mismo criterio que en entrenamiento",
+    "aumento_datos": null,
+    "normalizacion": "dividir entre 255 (preprocesado.preprocesar)",
+    "recorte_caja": null,
+    "recorte_centrado": null,
+    "cortes_por_paciente": 3,
+    "cortes_centrales": null,
+    "semilla_muestreo": 44,
+    "agregacion_paciente": "mean",
+    "umbral": 0.5,
+    "max_batches": null,
+    "overfit_batches": null
+  },
+  "datos": {
+    "pacientes_entrenamiento": 877,
+    "cortes_entrenamiento": 8753,
+    "cortes_entrenamiento_usados": 8753,
+    "imagenes_entrenamiento_por_epoca": 2631,
+    "pacientes_validacion": 220,
+    "cortes_validacion": 2192,
+    "validacion_recortada": false,
+    "tasa_pCR_entrenamiento_por_cohorte": {
+      "Duke": 0.2202,
+      "I-SPY1": 0.2289,
+      "I-SPY2": 0.3307
+    }
+  },
+  "entorno": {
+    "git_commit": "c047d8155b4c4f58b82fd93586ddfee541245b02",
+    "git_codigo_sin_commit": false,
+    "python": "3.11.16",
+    "pytorch": "2.14.1+rocm7.14",
+    "cuda": null,
+    "dispositivo": "cuda",
+    "gpu": "AMD Radeon RX 6700 XT",
+    "cpu": "Intel(R) Core(TM) Ultra 5 245",
+    "nucleos_logicos": 14,
+    "hilos_torch": 14,
+    "num_workers": 2,
+    "so": "Linux-7.0.0-34-generic-x86_64-desconocido-with-glibc2.43",
+    "utils_caso_sha256": "1d6bf85893cbc3898d8ad9722df0c74ddb0945ba36b5169e73ab44eb8c9d0377",
+    "permitir_sin_commit": false
+  },
+  "rutas": {
+    "experimento": "experimentos/20261030_002756_cv_receta_baseline_f2",
+    "salidas": "outputs/runs/20261030_002756_cv_receta_baseline_f2"
+  },
+  "resultado": {
+    "perdida_primer_lote": 0.7654314041137695,
+    "epocas_ejecutadas": 12,
+    "mejor_epoca": 12,
+    "valor_criterio_mejor_epoca": 0.5843773028739867,
+    "parada_temprana": false,
+    "tiempo_total_s": 128.53861411497928,
+    "tiempo_medio_epoca_s": 10.688320304820081,
+    "auc_val": 0.5843773028739867,
+    "average_precision_val": 0.3197902465089727,
+    "auc_solo_cohorte": 0.5377934519423098
+  },
+  "sha256": {
+    "best.pt": "bb81905babadfee3cac1bfe1b7f2971dc4f212514c35cabffc27bd85b2f070a3",
+    "last.pt": "401261cfd52d2f4b144e8bffbb3f96a2f127a9fe61f69aafdad6dc6b15fb2501"
+  }
+}

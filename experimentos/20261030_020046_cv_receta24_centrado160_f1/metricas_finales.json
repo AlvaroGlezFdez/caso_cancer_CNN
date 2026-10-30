@@ -1,0 +1,26 @@
+{
+  "pacientes": 219,
+  "metodo": "mean",
+  "umbral": 0.5,
+  "auc": 0.5348263817546743,
+  "average_precision": 0.3077850604179976,
+  "sensibilidad": 0.0967741935483871,
+  "especificidad": 0.9235668789808917,
+  "accuracy": 0.6894977168949772,
+  "precision": 0.3333333333333333,
+  "brier": 0.22577796940509123,
+  "prob_media_predicha": 0.26500017816736676,
+  "tasa_pCR_real": 0.2831050228310502,
+  "auc_solo_cohorte": 0.5260427367988495,
+  "matriz_confusion": {
+    "VP": 6,
+    "VN": 145,
+    "FP": 12,
+    "FN": 56
+  },
+  "auc_por_cohorte": {
+    "I-SPY1": 0.336734693877551,
+    "I-SPY2": 0.5863636363636364,
+    "Duke": 0.3771043771043771
+  }
+}

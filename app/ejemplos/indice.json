@@ -1,0 +1,90 @@
+{
+  "licencia": "Imágenes derivadas de BreastDCEDL (N. Fridman et al., Scientific Data, 2026; doi:10.1038/s41597-026-06589-6), licencia CC BY-NC 4.0. Uso docente y de investigación.",
+  "ejemplos": [
+    {
+      "clave": "ejemplo_1",
+      "titulo": "Ejemplo 1",
+      "cohorte": "I-SPY2",
+      "descripcion": "Lesión con realce intenso y, detrás de la pared torácica, una estructura grande muy realzada (corazón o tórax).",
+      "corte": "corte central (6 de 10 de la paciente)",
+      "caja_tumor": [
+        100.0,
+        168.0,
+        120.0,
+        223.0
+      ],
+      "punto_sugerido": [
+        134,
+        172
+      ],
+      "variables": {
+        "HR_HER2_STATUS": "HER2pos",
+        "tum_vol": 16.84125,
+        "age": 37.0,
+        "n_xy": 256.0,
+        "sraw": 120.0,
+        "eraw": 223.0,
+        "scol": 88.0,
+        "ecol": 156.0,
+        "xy_spacing": 0.625
+      },
+      "pila": "pila.npz: los 10 cortes de la paciente de este ejemplo"
+    },
+    {
+      "clave": "ejemplo_2",
+      "titulo": "Ejemplo 2",
+      "cohorte": "I-SPY1",
+      "descripcion": "Nódulo redondeado con realce intenso en una mama densa.",
+      "corte": "corte central (6 de 10 de la paciente)",
+      "caja_tumor": [
+        101.0,
+        139.0,
+        161.0,
+        198.0
+      ],
+      "punto_sugerido": [
+        120,
+        180
+      ],
+      "variables": {
+        "HR_HER2_STATUS": "TripleNeg",
+        "tum_vol": 12.122894287109377,
+        "age": 37.81,
+        "n_xy": 256.0,
+        "sraw": 161.0,
+        "eraw": 198.0,
+        "scol": 117.0,
+        "ecol": 155.0,
+        "xy_spacing": 0.859375
+      }
+    },
+    {
+      "clave": "ejemplo_3",
+      "titulo": "Ejemplo 3",
+      "cohorte": "Duke",
+      "descripcion": "Lesión pequeña y centrada; la pared torácica queda fuera del campo.",
+      "corte": "corte central (6 de 10 de la paciente)",
+      "caja_tumor": [
+        70.0,
+        116.0,
+        100.0,
+        152.0
+      ],
+      "punto_sugerido": [
+        93,
+        126
+      ],
+      "variables": {
+        "HR_HER2_STATUS": "HRposHER2neg",
+        "tum_vol": 3.97638686453505,
+        "age": 37.0,
+        "n_xy": 256.0,
+        "sraw": 100.0,
+        "eraw": 152.0,
+        "scol": 140.0,
+        "ecol": 186.0,
+        "xy_spacing": 0.80357140302658
+      }
+    }
+  ]
+}
